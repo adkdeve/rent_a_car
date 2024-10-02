@@ -1,0 +1,33 @@
+name: rent_a_car_project
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  smooth_page_indicator: ^1.0.0+2
+  cupertino_icons: ^1.0.8
+  image_picker: ^1.0.0
+  flashy_tab_bar2: ^0.0.7
+
+
+
+
+  swipeable_card_stack: any
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Adding the assets section
+  assets:
+    - assets/avatar.jpg
+    - assets/category_default.png
