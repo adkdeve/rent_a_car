@@ -3,6 +3,10 @@ import 'package:rent_a_car_project/Screen/ProfileScreen.dart';
 import 'package:rent_a_car_project/globalContent.dart';
 import 'package:rent_a_car_project/Screen/CarDetailScreen.dart';
 
+import '../carsdata/CarRepository.dart';
+import '../carsdata/Car.dart';
+import 'dart:io';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -11,44 +15,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final CarRepository _carRepository = CarRepository(); // Initialize CarRepository
 
   final List<Map<String, String>> _categories = [
-    {'name': 'SUVs', 'image': 'assets/suv.png'},
-    {'name': 'Sedans', 'image': 'assets/sedan.png'},
-    {'name': 'Sports', 'image': 'assets/sports_car.png'},
-    {'name': 'Electric', 'image': 'assets/electric_car.png'},
+    {'name': 'SUVs', 'image': 'assets/category_default.png'},
+    {'name': 'Sedans', 'image': 'assets/category_default.png'},
+    {'name': 'Sports', 'image': 'assets/category_default.png'},
+    {'name': 'Electric', 'image': 'assets/category_default.png'},
   ];
 
-  final List<Map<String, String>> _featuredCars = [
-    {'name': 'Toyota Camry', 'type': 'Sedan', 'image': 'https://autos.hamariweb.com//images/carimages/car_5554_123307.jpg', 'price': '\R\s120/day'},
-    {'name': 'Tesla Model 3', 'type': 'Electric', 'image': 'https://www.publicdomainpictures.net/pictures/130000/t2/bmw-i8-luxury-car.jpg', 'price': '\R\s150'},
-    // Add more featured cars here
-  ];
+  late List<Car> featuredCars; // To store featured cars from the repository
+  late List<Car> recentCars; // To store recent cars from the repository
 
-  final List<Map<String, String>> recentCars = [
-    {
-      'name': 'Tesla Model S',
-      'price': '1200',
-      'rating': '4.8',
-      'transmission': 'Automatic',
-      'fuel': 'Electric',
-      'passengers': '5',
-      'image': 'https://autos.hamariweb.com//images/carimages/car_5554_123307.jpg',
-    },
-    {
-      'name': 'BMW X5',
-      'price': '1500',
-      'rating': '4.6',
-      'transmission': 'Automatic',
-      'fuel': 'Diesel',
-      'passengers': '7',
-      'image': 'https://www.publicdomainpictures.net/pictures/130000/t2/bmw-i8-luxury-car.jpg',
-    },
-    // Add more car data here
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Retrieve featured and recent cars from CarRepository
+    featuredCars = _carRepository.getFeaturedCars();
+    recentCars = _carRepository.getRecentCars();
+  }
 
   String _searchQuery = "";
-
 
   @override
   Widget build(BuildContext context) {
@@ -60,273 +47,17 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section, Categories Section code remains the same...
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [themeColor, themeColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Location and Profile Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.location_on, color: Colors.white),
-                            SizedBox(width: 4),
-                            Text(
-                              'New York, USA',
-                              style: TextStyle(color: Colors.white, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              'Hi, $fName',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            GestureDetector(
-                              onTap: () {
-                                // Navigate to Profile Page
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ProfilePage(), // Replace with your ProfilePage widget
-                                  ),
-                                );
-                              },
-                              child: CircleAvatar(
-                                radius: 20,
-                                backgroundImage: image != null
-                                    ? FileImage(image!)
-                                    : const AssetImage("assets/avatar.jpg"),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Welcome Back!',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Search Bar
-                    TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: 'Search for cars...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Header Section
+              _buildHeaderSection(context, themeColor),
 
               // Categories Section
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 6, 10, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Categories",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Navigate to Categories page or show more categories
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: themeColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                          ),
-                          child: const Text('More', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      height: 120,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _categories.length,
-                        itemBuilder: (context, index) {
-                          final category = _categories[index];
-                          return GestureDetector(
-                            onTap: () {
-                              // Navigate to the category page
-                            },
-                            child: Column(
-                              children: [
-                                Material(
-                                  elevation: 5,
-                                  color: Colors.transparent,
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    margin: const EdgeInsets.only(right: 12),
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      image: const DecorationImage(
-                                        image: AssetImage("assets/category_default.png"),
-                                        fit: BoxFit.cover,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  category['name']!,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildCategoriesSection(themeColor),
 
-              // Featured Cars Section with 'More' Button and Slider
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                child: SingleChildScrollView( // Wrap with SingleChildScrollView
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Featured Cars Title and More Button
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Featured Cars",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              // Navigate to featured cars list
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(builder: (context) => FeaturedCarsScreen()), // Replace with your navigation logic
-                              // );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: themeColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                            ),
-                            child: const Text('More', style: TextStyle(color: Colors.white)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10), // Spacing between the row and the list
-                      // Featured Cars Horizontal List
-                      _buildFeaturedCarsList(_featuredCars), // Assuming featuredCars is a List of car data
-                    ],
-                  ),
-                ),
-              ),
+              // Featured Cars Section
+              _buildFeaturedCarsSection(themeColor),
 
-              // Recent Cars Section with 'More' Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title and 'More' button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Recent Cars",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Navigate to the full list of recent cars
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: themeColor, // Assuming themeColor is defined
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                          ),
-                          child: const Text('More', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12), // Space between title and cards
-                    // Recent Car List
-                    ListView.builder(
-                      shrinkWrap: true, // Ensures the list takes only the required height
-                      physics: const NeverScrollableScrollPhysics(), // Prevents internal scrolling
-                      itemCount: recentCars.length, // Assuming recentCars is a list of cars
-                      itemBuilder: (context, index) {
-                        return _buildRecentCarCard(recentCars[index], context); // Use the recent car card
-                      },
-                    ),
-                  ],
-                ),
-              )
-
+              // Recent Cars Section
+              _buildRecentCarsSection(themeColor),
             ],
           ),
         ),
@@ -334,87 +65,307 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Method to build individual featured car cards
-  Widget _buildFeaturedCarCard(Map<String, String> car) {
-    return SizedBox(
-      width: 250,
-      child: Card(
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+  // Builds the Header Section (Location, Profile, Search)
+  Widget _buildHeaderSection(BuildContext context, Color themeColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [themeColor, themeColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Car Image with favorite button on top right
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                      child: Image.network(
-                        car['image']!,
-                        fit: BoxFit.cover,
-                        height: 120, // Adjust image height
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.broken_image);
-                        },
-                      ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Location and Profile Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.location_on, color: Colors.white),
+                  SizedBox(width: 4),
+                  Text(
+                    'New York, USA',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    'Hi, $fName',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: GestureDetector(
-                        onTap: () {
-                          // Handle favorite button tap
-                        },
-                        child: const Icon(
-                          Icons.favorite_border,
-                          color: Colors.white,
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProfilePage(),
                         ),
-                      ),
+                      );
+                    },
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundImage: image != null
+                          ? FileImage(image!)
+                          : const AssetImage("assets/avatar.jpg"),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Welcome Back!',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Search Bar
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              hintText: 'Search for cars...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Builds the Categories Section
+  Widget _buildCategoriesSection(Color themeColor) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Categories",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // Navigate to Categories page
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                ),
+                child: const Text('More', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _categories.length,
+              itemBuilder: (context, index) {
+                final category = _categories[index];
+                return GestureDetector(
+                  onTap: () {
+                    // Navigate to category page
+                  },
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Car Name
-                      Text(
-                        car['name']!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                      Material(
+                        elevation: 5,
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(category['image']!),
+                              fit: BoxFit.cover,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      // Transmission type
+                      const SizedBox(height: 5),
                       Text(
-                        car['type'] ?? 'Automatic', // Default to Automatic if not provided
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Rent Per Day
-                      Text(
-                        '₹${car['price']}/day',
+                        category['name']!,
                         style: const TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green, // Highlight rent price
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Builds the Featured Cars Section
+  Widget _buildFeaturedCarsSection(Color themeColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Featured Cars",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // Navigate to featured cars list
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                ),
+                child: const Text('More', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildFeaturedCarsList(featuredCars),
+        ],
+      ),
+    );
+  }
+
+  // Horizontal scrollable layout for featured cars
+  Widget _buildFeaturedCarsList(List<Car> cars) {
+    return SizedBox(
+      height: 220, // Adjust height as needed
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: cars.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: _buildFeaturedCarCard(cars[index]), // Call individual car card builder
+          );
+        },
+      ),
+    );
+  }
+
+  // Individual Featured Car Card
+  Widget _buildFeaturedCarCard(Car car) {
+    return SizedBox(
+      width: 220, // Card width for featured cars
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // Rounded corners for the card
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Car Image with a favorite button on top right
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: _buildCarImage(car.imageUrl), // Helper function to load the car image
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Handle favorite button tap
+                    },
+                    child: const Icon(
+                      Icons.favorite_border,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ],
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    car.name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    car.transmission ?? 'Unknown',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${car.pricePerDay}/day',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -422,27 +373,44 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-// The horizontal scrollable layout
-  Widget _buildFeaturedCarsList(List<Map<String, String>> cars) {
-    return SizedBox(
-      height: 220,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal, // Horizontal scroll direction
-        itemCount: cars.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 10), // Spacing between cards
-            child: _buildFeaturedCarCard(cars[index]),
-          );
-        },
+  // Builds the Recent Cars Section
+  Widget _buildRecentCarsSection(Color themeColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Recent Cars",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: recentCars.length,
+            itemBuilder: (context, index) {
+              return _buildRecentCarCard(recentCars[index], context);
+            },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildRecentCarCard(Map<String, String> car, BuildContext context) {
+  // Individual Recent Car Card
+  Widget _buildRecentCarCard(Car car, BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigate to car details page
+        // Navigate to car details page using the Car object
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -463,15 +431,7 @@ class _HomePageState extends State<HomePage> {
                 // Car Image
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Image.network(
-                    car['image']!,
-                    fit: BoxFit.cover,
-                    height: 180,
-                    width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.broken_image);
-                    },
-                  ),
+                  child: _buildCarImage(car.imageUrl),
                 ),
                 // Rating in top left corner
                 Positioned(
@@ -480,7 +440,7 @@ class _HomePageState extends State<HomePage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black54, // Light transparent background
+                      color: Colors.black54,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -488,7 +448,7 @@ class _HomePageState extends State<HomePage> {
                         const Icon(Icons.star, color: Colors.yellow, size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          car['rating'] ?? '4.5',
+                          car.rating,
                           style: const TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
@@ -520,32 +480,31 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        car['name']!,
+                        car.name,
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '₹${car['price']}/day',
+                        '₹${car.pricePerDay}/day',
                         style: const TextStyle(fontSize: 14, color: Colors.green),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Divider(), // Border line
+                  const Divider(),
                   const SizedBox(height: 8),
-                  // Transmission, Fuel Type, and Passenger Capacity
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        car['transmission'] ?? 'Automatic',
+                        car.transmission ?? 'Unknown',
                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       Text(
-                        car['fuel'] ?? 'Petrol',
+                        car.fuelType ?? 'Unknown',
                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       Text(
-                        '${car['passengers']} passengers',
+                        '${car.passengerCapacity} passengers',
                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
@@ -559,32 +518,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
+  // Method to build car image widget (handles both local and network images)
+  Widget _buildCarImage(String imageUrl) {
+    if (imageUrl.startsWith('http')) {
+      // If it's a network image, load via Image.network
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        height: 120, // Adjust the height as needed
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.broken_image); // Fallback for broken images
+        },
+      );
+    } else {
+      // If it's a local image, use Image.file
+      return Image.file(
+        File(imageUrl),
+        fit: BoxFit.cover,
+        height: 120, // Adjust the height as needed
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.broken_image); // Fallback for broken images
+        },
+      );
+    }
+  }
 }
-
-
-
-class Car {
-  final String title;
-  final String description;
-  final String imageUrl;
-  final double price;
-
-  Car({required this.title, required this.description, required this.imageUrl, required this.price});
-}
-
-List<Car> featuredCars = [
-  Car(
-    title: 'Tesla Model S',
-    description: 'Electric car with top performance.',
-    imageUrl: 'https://example.com/tesla.jpg',
-    price: 100.0,
-  ),
-  Car(
-    title: 'Ford Mustang',
-    description: 'High performance sports car.',
-    imageUrl: 'https://example.com/mustang.jpg',
-    price: 150.0,
-  ),
-  // Add more cars here
-];

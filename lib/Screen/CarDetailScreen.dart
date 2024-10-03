@@ -214,6 +214,8 @@ import 'package:flutter/material.dart';
 //   }
 // }
 
+import '../carsdata/Car.dart';
+
 class FeatureItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -237,7 +239,8 @@ class ReviewItem extends StatelessWidget {
   final String review;
   final int rating;
 
-  const ReviewItem({super.key,
+  const ReviewItem({
+    super.key,
     required this.reviewer,
     required this.review,
     required this.rating,
@@ -271,7 +274,7 @@ class ReviewItem extends StatelessWidget {
 }
 
 class CarDetailScreen extends StatelessWidget {
-  final Map<String, String> car;
+  final Car car; // Now using the Car model directly
 
   const CarDetailScreen({Key? key, required this.car}) : super(key: key);
 
@@ -279,7 +282,7 @@ class CarDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(car['name'] ?? 'Car Details'),
+        title: Text(car.name), // Display the car name in the AppBar
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -289,7 +292,7 @@ class CarDetailScreen extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
-                car['image']!,
+                car.imageUrl,
                 fit: BoxFit.cover,
                 height: 250,
                 width: double.infinity,
@@ -304,15 +307,30 @@ class CarDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Car Name
-                  Text(
-                    car['name']!,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Car Name
+                      Text(
+                        car.name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      // Car Name Plate (only displayed here)
+                      Text(
+                        'Name Plate: ${car.namePlate}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+
                   ),
-                  const SizedBox(height: 8),
                   // Rating and Rent
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -322,13 +340,13 @@ class CarDetailScreen extends StatelessWidget {
                           const Icon(Icons.star, color: Colors.yellow),
                           const SizedBox(width: 4),
                           Text(
-                            car['rating'] ?? '4.5',
+                            car.rating,
                             style: const TextStyle(fontSize: 16),
                           ),
                         ],
                       ),
                       Text(
-                        '₹${car['price']}/day',
+                        '₹${car.pricePerDay}/day',
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -344,13 +362,45 @@ class CarDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildCarDetailRow(Icons.speed, 'Transmission', car['transmission'] ?? 'Automatic'),
-                      _buildCarDetailRow(Icons.local_gas_station, 'Fuel', car['fuel'] ?? 'Petrol'),
-                      _buildCarDetailRow(Icons.people, 'Passengers', '${car['passengers']}'),
+                      _buildCarDetailRow(Icons.speed, 'Transmission', car.transmission ?? 'Automatic'),
+                      _buildCarDetailRow(Icons.local_gas_station, 'Fuel', car.fuelType ?? 'Petrol'),
+                      _buildCarDetailRow(Icons.people, 'Passengers', '${car.passengerCapacity ?? 'Unknown'}'),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Additional actions or information
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  // Car Features
+                  Text(
+                    'Features',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    children: car.features.map((feature) {
+                      return FeatureItem(icon: Icons.check, label: feature);
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  // Car Reviews
+                  Text(
+                    'Reviews',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Column(
+                    children: car.reviews.map((review) {
+                      return ReviewItem(
+                        reviewer: review['reviewer'] as String,
+                        review: review['review'] as String,
+                        rating: review['rating'] as int,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
                       // Book the car or perform another action
