@@ -36,7 +36,7 @@ class CarRepository {
       imageUrl: 'https://www.publicdomainpictures.net/pictures/130000/t2/bmw-i8-luxury-car.jpg',
       pricePerDay: '\R\s150',
       rating: '4.6',
-      details: 'Tesla Model 3 is a popular electric vehicle with high performance and cutting-edge features.',
+      details: 'Tesla Model 3 is a popular electric vehicle with high performance and cutting-edge features. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
       features: ['Electric', 'Autopilot', 'Luxury Interior'],
       reviews: [
         {'reviewer': 'Jane Smith', 'review': 'The best electric car on the market!', 'rating': 5},
