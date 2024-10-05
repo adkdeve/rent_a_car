@@ -6,6 +6,8 @@ import 'package:rent_a_car_project/Screen/CarDetailScreen.dart';
 import '../carsdata/CarRepository.dart';
 import '../carsdata/Car.dart';
 import 'dart:io';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,17 +28,99 @@ class _HomePageState extends State<HomePage> {
 
   late List<Car> featuredCars; // To store featured cars from the repository
   late List<Car> recentCars; // To store recent cars from the repository
+  String _location = "Fetching location..."; // To store the user's real-time location
+  String _searchQuery = "";
 
   @override
   void initState() {
     super.initState();
-    // Retrieve featured and recent cars from CarRepository
-    featuredCars = _carRepository.getFeaturedCars();
-    recentCars = _carRepository.getRecentCars();
+    _getCurrentLocation(); // Fetch location when the screen starts
+    featuredCars = _carRepository.getFeaturedCars(); // Get featured cars
+    recentCars = _carRepository.getRecentCars(); // Get recent cars
   }
 
-  String _searchQuery = "";
+  Future<void> _getCurrentLocation() async {
+    // Check if location services are enabled
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // If not, show a dialog to guide the user to enable it
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Location Services Disabled"),
+            content: const Text(
+              "Location services are disabled. Please enable location services to use this feature.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Close the dialog
+                  await Geolocator.openLocationSettings(); // Open location settings
+                },
+                child: const Text("Open Settings"),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
 
+    // Check for location permissions
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        setState(() {
+          _location = "Location permissions are denied.";
+        });
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      setState(() {
+        _location = "Location permissions are permanently denied.";
+      });
+      return;
+    }
+
+    // Fetch the current position with high accuracy
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    // Use reverse geocoding to get the address from the coordinates
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+
+        setState(() {
+          // Prioritize locality (city) and administrative area (region), else fallback to the country
+          String city = place.locality ?? 'Unknown City';
+          String region = place.administrativeArea ?? 'Unknown Region';
+          String country = place.country ?? 'Unknown Country';
+
+          // Combine these for a more readable location
+          _location = "$city, $region, $country";
+        });
+      } else {
+        // If reverse geocoding returns no result, fallback to coordinates
+        setState(() {
+          _location = "${position.latitude}, ${position.longitude}";
+        });
+      }
+    } catch (e) {
+      // If reverse geocoding fails, display the coordinates as a fallback
+      setState(() {
+        _location = "${position.latitude}, ${position.longitude}";
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final themeColor = Theme.of(context).primaryColor;
@@ -66,6 +150,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Builds the Header Section (Location, Profile, Search)
+// UI Display:
   Widget _buildHeaderSection(BuildContext context, Color themeColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -83,17 +168,16 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Location and Profile Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.location_on, color: Colors.white),
-                  SizedBox(width: 4),
+                  const Icon(Icons.location_on, color: Colors.white),
+                  const SizedBox(width: 4),
                   Text(
-                    'New York, USA',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    _location, // Displays the updated location (either area name or coordinates)
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ],
               ),
@@ -138,7 +222,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: 10),
-          // Search Bar
           TextField(
             onChanged: (value) {
               setState(() {
@@ -161,7 +244,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   // Builds the Categories Section
   Widget _buildCategoriesSection(Color themeColor) {
     return Padding(

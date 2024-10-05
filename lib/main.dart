@@ -25,7 +25,7 @@ class RentXApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.system, // Adjust theme based on system settings
-      home: const SplashScreen(),
+      home: const HomeScreen(),
     );
   }
 }
