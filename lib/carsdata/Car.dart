@@ -1,7 +1,7 @@
 class Car {
   final String id;
   final String name;
-  final String imageUrl;
+  final List<String> imageUrl; // <-- List of image URLs (instead of a single image)
   final String rating;
   final String pricePerDay;
   final String details;

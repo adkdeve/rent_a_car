@@ -111,10 +111,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       },
                     ),
                     ProfileOption(
-                      icon: Icons.settings,
-                      title: 'Account Settings',
+                      icon: Icons.message,
+                      title: 'Chat',
                       onTap: () {
                         // Navigate to Account Settings screen
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Chat button pressed')),
+                        );
+
                       },
                     ),
                     ProfileOption(
@@ -122,6 +126,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'Notifications',
                       onTap: () {
                         // Navigate to Notifications settings
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Notification button pressed')),
+                        );
                       },
                     ),
                     ProfileOption(
@@ -129,6 +136,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'About App',
                       onTap: () {
                         // Show About App information
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('About App button pressed')),
+                        );
                       },
                     ),
                     ProfileOption(
@@ -136,6 +146,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'Sign Out',
                       onTap: () {
                         // Handle sign-out
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Sign Out button pressed!')),
+                        );
                       },
                     ),
                   ],

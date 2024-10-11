@@ -1,13 +1,127 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:rent_a_car_project/Screen/ProfileScreen.dart';
 import 'package:rent_a_car_project/globalContent.dart';
 import 'package:rent_a_car_project/Screen/CarDetailScreen.dart';
-
+import 'package:rent_a_car_project/Screen/CategoryScreen.dart';
+import 'package:rent_a_car_project/Screen/CarAddScreen.dart';
+import 'package:rent_a_car_project/Screen/SearchScreen.dart';
+import 'package:rent_a_car_project/Screen/FeaturedCarScreen.dart';
+import 'package:rent_a_car_project/Screen/FavouriteScreen.dart';
+import 'package:rent_a_car_project/Screen/CategoryFromMore.dart';
 import '../carsdata/CarRepository.dart';
 import '../carsdata/Car.dart';
 import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
+import 'package:reveal_on_scroll/reveal_on_scroll.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomePage(),
+    const CategoryPage(),
+    const FavoritesPage(),
+    const ProfilePage(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    const themeColor = AppColors.primarySwatch;
+    final navColor = Theme.of(context).primaryColor;
+
+    return Scaffold(
+      extendBody: true,
+      resizeToAvoidBottomInset: false, // Prevents resizing when keyboard appears
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CarAddScreen()),
+          );
+        },
+        shape: const CircleBorder(),
+        backgroundColor: Colors.white,
+        elevation: 6,
+        child: const Icon(Icons.add, color: themeColor),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _buildBottomNavBar(navColor),
+      body: _pages[_currentIndex],
+    );
+  }
+
+  Widget _buildBottomNavBar(Color navColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            child: FlashyTabBar(
+              backgroundColor: navColor,
+              selectedIndex: _currentIndex,
+              showElevation: true,
+              onItemSelected: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              items: [
+                FlashyTabBarItem(
+                  icon: const Icon(Icons.home),
+                  title: const Text('Home'),
+                  activeColor: Colors.white,
+                  inactiveColor: Colors.white70,
+                ),
+                FlashyTabBarItem(
+                  icon: const Icon(Icons.category),
+                  title: const Text('Categories'),
+                  activeColor: Colors.white,
+                  inactiveColor: Colors.white70,
+                ),
+                FlashyTabBarItem(
+                  icon: const Icon(Icons.favorite),
+                  title: const Text('Favorites'),
+                  activeColor: Colors.white,
+                  inactiveColor: Colors.white70,
+                ),
+                FlashyTabBarItem(
+                  icon: const Icon(Icons.person),
+                  title: const Text('Profile'),
+                  activeColor: Colors.white,
+                  inactiveColor: Colors.white70,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,19 +131,29 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final CarRepository _carRepository = CarRepository(); // Initialize CarRepository
+  final CarRepository _carRepository = CarRepository();
+  final ScrollController _scrollController = ScrollController(); // Scroll controller
+
 
   final List<Map<String, String>> _categories = [
-    {'name': 'SUVs', 'image': 'assets/category_default.png'},
-    {'name': 'Sedans', 'image': 'assets/category_default.png'},
-    {'name': 'Sports', 'image': 'assets/category_default.png'},
-    {'name': 'Electric', 'image': 'assets/category_default.png'},
+    {'name': 'Toyota', 'image': 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Toyota_logo_%28Red%29.svg'},
+    // {'name': 'Honda', 'image': 'assets/honda.png'},
+    // {'name': 'BMW', 'image': 'assets/bmw.png'},
+    // {'name': 'Mercedes-Benz', 'image': 'assets/mercedes.png'},
+    // {'name': 'Audi', 'image': 'assets/audi.png'},
+    // {'name': 'Tesla', 'image': 'assets/tesla.png'},
+    // {'name': 'Ford', 'image': 'assets/ford.png'},
+    // {'name': 'Chevrolet', 'image': 'assets/chevrolet.png'},
+    // {'name': 'Nissan', 'image': 'assets/nissan.png'},
+    // {'name': 'Lexus', 'image': 'assets/lexus.png'},
+    // {'name': 'Porsche', 'image': 'assets/porsche.png'},
+    // {'name': 'Volkswagen', 'image': 'assets/volkswagen.png'},
   ];
 
-  late List<Car> featuredCars; // To store featured cars from the repository
-  late List<Car> recentCars; // To store recent cars from the repository
-  String _location = "Fetching location..."; // To store the user's real-time location
-  String _searchQuery = "";
+
+  late List<Car> featuredCars;
+  late List<Car> recentCars;
+  String _location = "Fetching location...";
 
   @override
   void initState() {
@@ -128,6 +252,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController, // Attach the scroll controller
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -150,7 +275,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Builds the Header Section (Location, Profile, Search)
-// UI Display:
   Widget _buildHeaderSection(BuildContext context, Color themeColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -223,10 +347,15 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 10),
           TextField(
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
+            readOnly: true, // Prevents any text input
+            onTap: () {
+              // Navigate to SearchPage when the TextField is tapped
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SearchPage(),
+                ),
+              );
             },
             decoration: InputDecoration(
               filled: true,
@@ -244,6 +373,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   // Builds the Categories Section
   Widget _buildCategoriesSection(Color themeColor) {
     return Padding(
@@ -263,7 +393,13 @@ class _HomePageState extends State<HomePage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // Navigate to Categories page
+                  // Navigate to CategoryFromMore screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CategoryFromMore(categories: _categories),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColor,
@@ -286,7 +422,7 @@ class _HomePageState extends State<HomePage> {
                 final category = _categories[index];
                 return GestureDetector(
                   onTap: () {
-                    // Navigate to category page
+                    // Handle category click
                   },
                   child: Column(
                     children: [
@@ -299,11 +435,11 @@ class _HomePageState extends State<HomePage> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage(category['image']!),
-                              fit: BoxFit.cover,
-                            ),
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: _getImageWidget(category['image']!),
                           ),
                         ),
                       ),
@@ -346,6 +482,11 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                 onPressed: () {
                   // Navigate to featured cars list
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const FeaturedCarScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColor,
@@ -384,72 +525,83 @@ class _HomePageState extends State<HomePage> {
 
   // Individual Featured Car Card
   Widget _buildFeaturedCarCard(Car car) {
-    return SizedBox(
-      width: 220, // Card width for featured cars
-      child: Card(
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16), // Rounded corners for the card
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Car Image with a favorite button on top right
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: _buildCarImage(car.imageUrl), // Helper function to load the car image
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Handle favorite button tap
-                    },
-                    child: const Icon(
-                      Icons.favorite_border,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to CarDetailScreen when the card is tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CarDetailScreen(car: car), // Pass the selected car
+          ),
+        );
+      },
+      child: SizedBox(
+        width: 220, // Card width for featured cars
+        child: Card(
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16), // Rounded corners for the card
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Car Image with a favorite button on top right
+              Stack(
                 children: [
-                  Text(
-                    car.name,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: _buildCarImage(car.imageUrl), // Helper function to load the car image
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    car.transmission ?? 'Unknown',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${car.pricePerDay}/day',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Handle favorite button tap
+                      },
+                      child: const Icon(
+                        Icons.favorite_border,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      car.name,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      car.transmission ?? 'Unknown',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${car.pricePerDay}/day',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -465,13 +617,7 @@ class _HomePageState extends State<HomePage> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Recent Cars",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text("Recent Cars", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 12),
@@ -480,7 +626,13 @@ class _HomePageState extends State<HomePage> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: recentCars.length,
             itemBuilder: (context, index) {
-              return _buildRecentCarCard(recentCars[index], context);
+              return ScrollToReveal.withAnimation(
+                label: 'RecentCar$index',
+                scrollController: _scrollController, // Use the defined ScrollController
+                reflectPosition: 0, // Trigger animation on reaching this point
+                animationType: AnimationType.findInLeft, // Corrected animation type
+                child: _buildRecentCarCard(recentCars[index], context),
+              );
             },
           ),
         ],
@@ -488,7 +640,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Individual Recent Car Card
+  // Individual Recent Car Card with RevealOnScroll applied
   Widget _buildRecentCarCard(Car car, BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -601,29 +753,63 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Method to build car image widget (handles both local and network images)
-  Widget _buildCarImage(String imageUrl) {
-    if (imageUrl.startsWith('http')) {
-      // If it's a network image, load via Image.network
+  Widget _buildCarImage(List<String> imageUrls) {
+    if (imageUrls.isNotEmpty) {
+      String imageUrl = imageUrls.first; // Use the first image for display
+
+      // Check if it's a network image or local file path
+      if (imageUrl.startsWith('http')) {
+        // For network images
+        return Image.network(
+          imageUrl,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: 120, // Adjust height as needed
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(Icons.broken_image, size: 50); // Fallback for broken images
+          },
+        );
+      } else {
+        // For local file images
+        return Image.file(
+          File(imageUrl),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: 120, // Adjust height as needed
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(Icons.broken_image, size: 50); // Fallback for broken images
+          },
+        );
+      }
+    } else {
+      // Fallback when there are no images
+      return const Icon(Icons.broken_image, size: 50);
+    }
+  }
+
+  Widget _getImageWidget(String imageUrl) {
+    if (imageUrl.endsWith('.svg')) {
+      // Use SvgPicture to load SVG images
+      return SvgPicture.network(imageUrl, fit: BoxFit.cover);
+    } else if (imageUrl.startsWith('http')) {
+      // For network images (PNG, JPEG, etc.)
       return Image.network(
         imageUrl,
         fit: BoxFit.cover,
-        height: 120, // Adjust the height as needed
-        width: double.infinity,
         errorBuilder: (context, error, stackTrace) {
           return const Icon(Icons.broken_image); // Fallback for broken images
         },
       );
     } else {
-      // If it's a local image, use Image.file
+      // For local images
       return Image.file(
         File(imageUrl),
         fit: BoxFit.cover,
-        height: 120, // Adjust the height as needed
-        width: double.infinity,
         errorBuilder: (context, error, stackTrace) {
           return const Icon(Icons.broken_image); // Fallback for broken images
         },
       );
     }
   }
+
 }

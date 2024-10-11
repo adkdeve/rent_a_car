@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 
-String fName = "John";
-String lName = "Doe";
+String fName = "Alee";
+String lName = "";
 String email = "john.doe@example.com";
 String phoneNumber = "03121234567";
 String nPassword = '';

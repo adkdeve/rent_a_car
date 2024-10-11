@@ -41,13 +41,15 @@ class _CarAddScreenState extends State<CarAddScreen> {
   final ImagePicker _picker = ImagePicker();
   final CarRepository _carRepository = CarRepository();
 
+  // Save images locally
   Future<String> _saveImageLocally(XFile image) async {
     final directory = await getApplicationDocumentsDirectory();
-    final String path = '${directory.path}/${_namePlateController.text}.jpg';
+    final String path = '${directory.path}/${_namePlateController.text}_${DateTime.now().millisecondsSinceEpoch}.jpg';
     final File localImage = await File(image.path).copy(path); // Save the image locally
     return localImage.path; // Return the file path
   }
 
+  // Pick images for car
   Future<void> _pickImage() async {
     if (_carImages.length >= 5) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -60,11 +62,12 @@ class _CarAddScreenState extends State<CarAddScreen> {
 
     if (pickedImages != null && pickedImages.isNotEmpty) {
       setState(() {
-        _carImages.addAll(pickedImages.take(5 - _carImages.length));
+        _carImages.addAll(pickedImages.take(5 - _carImages.length)); // Allow up to 5 images
       });
     }
   }
 
+  // Submit the form and add the car to the repository
   void _submitForm() async {
     if (_carNameController.text.isNotEmpty &&
         _carModelController.text.isNotEmpty &&
@@ -80,21 +83,21 @@ class _CarAddScreenState extends State<CarAddScreen> {
         imagePaths.add(imagePath);
       }
 
-      // Add the new car to the repository using name plate as ID
+      // Add the new car to the repository
       Car newCar = Car(
         id: _namePlateController.text, // Use name plate as ID
         name: _carNameController.text,
-        imageUrl: imagePaths.isNotEmpty ? imagePaths.first : '', // Set the first image as the main image
+        imageUrl: imagePaths, // Store all image paths
         pricePerDay: _carPriceController.text,
         rating: '4.5', // Default rating
         details: 'Details about ${_carNameController.text}',
         features: [
-          _hasAC ? 'Air Conditioning' : '',
-          _hasGPS ? 'GPS' : '',
-          _hasBluetooth ? 'Bluetooth' : '',
-          _hasRearCamera ? 'Rear Camera' : '',
-          _hasSunroof ? 'Sunroof' : '',
-        ],
+          if (_hasAC) 'Air Conditioning',
+          if (_hasGPS) 'GPS',
+          if (_hasBluetooth) 'Bluetooth',
+          if (_hasRearCamera) 'Rear Camera',
+          if (_hasSunroof) 'Sunroof',
+        ], // Only add selected features
         reviews: [],
         transmission: _selectedTransmission,
         fuelType: _selectedFuelType,
@@ -280,6 +283,7 @@ class _CarAddScreenState extends State<CarAddScreen> {
     );
   }
 
+  // Helper methods for building text fields, dropdowns, and switches
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../carsdata/Car.dart';
 
@@ -27,16 +28,18 @@ class CarDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top image section
+              // Top image section with PageView for multiple images
               SizedBox(
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.3, // 30% height of the screen
-                child: Image.network(
-                  car.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(Icons.broken_image, size: 50);
-                  },
+                child: GestureDetector(
+                  onTap: () => _showFullScreenImages(context, car.imageUrl), // On tap, show full screen images
+                  child: PageView.builder(
+                    itemCount: car.imageUrl.length, // Number of images
+                    itemBuilder: (context, index) {
+                      return _buildImage(car.imageUrl[index]); // Display each image
+                    },
+                  ),
                 ),
               ),
 
@@ -207,6 +210,60 @@ class CarDetailScreen extends StatelessWidget {
       ],
     );
   }
+
+  // Updated image builder to handle both network and local images
+  Widget _buildImage(String imageUrl) {
+    return Center(
+      child: imageUrl.startsWith('http')
+          ? Image.network(
+        imageUrl,
+        fit: BoxFit.contain, // Ensure the image scales properly
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.broken_image, size: 50); // Fallback icon for broken images
+        },
+      )
+          : Image.file(
+        File(imageUrl),
+        fit: BoxFit.contain, // Ensure the image scales properly
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.broken_image, size: 50); // Fallback icon for broken images
+        },
+      ),
+    );
+  }
+
+  // Full-screen image view for multiple images
+  void _showFullScreenImages(BuildContext context, List<String> imageUrls) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop(); // Close the dialog on tap
+          },
+          child: Dialog(
+            backgroundColor: Colors.black, // Set background to black for full-screen feel
+            insetPadding: EdgeInsets.zero, // Remove padding
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: PageView.builder(
+                itemCount: imageUrls.length,
+                itemBuilder: (context, index) {
+                  return _buildImage(imageUrls[index]); // Full-screen image with scaling
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 }
 
 class FeatureItem extends StatelessWidget {
@@ -265,171 +322,3 @@ class ReviewItem extends StatelessWidget {
     );
   }
 }
-
-// class CarDetailScreen extends StatelessWidget {
-//   final Car car; // Now using the Car model directly
-//
-//   const CarDetailScreen({Key? key, required this.car}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(car.name,style: const TextStyle(color: Colors.white),), // Display the car name in the AppBar
-//       ),
-//       body: SingleChildScrollView(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             // Car Image
-//             ClipRRect(
-//               borderRadius: BorderRadius.circular(16),
-//               child: Image.network(
-//                 car.imageUrl,
-//                 fit: BoxFit.cover,
-//                 height: 250,
-//                 width: double.infinity,
-//                 errorBuilder: (context, error, stackTrace) {
-//                   return const Icon(Icons.broken_image);
-//                 },
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       // Car Name
-//                       Text(
-//                         car.name,
-//                         style: const TextStyle(
-//                           fontSize: 24,
-//                           fontWeight: FontWeight.bold,
-//                         ),
-//                       ),
-//                       // Car Name Plate (only displayed here)
-//                       Text(
-//                         'Name Plate: ${car.namePlate}',
-//                         style: const TextStyle(
-//                           fontSize: 16,
-//                           fontWeight: FontWeight.bold,
-//                           color: Colors.grey,
-//                         ),
-//                       ),
-//                       const SizedBox(height: 8),
-//                     ],
-//
-//                   ),
-//                   // Rating and Rent
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       Row(
-//                         children: [
-//                           const Icon(Icons.star, color: Colors.yellow),
-//                           const SizedBox(width: 4),
-//                           Text(
-//                             car.rating,
-//                             style: const TextStyle(fontSize: 16),
-//                           ),
-//                         ],
-//                       ),
-//                       Text(
-//                         '₹${car.pricePerDay}/day',
-//                         style: const TextStyle(
-//                           fontSize: 20,
-//                           fontWeight: FontWeight.bold,
-//                           color: Colors.green,
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                   const SizedBox(height: 16),
-//                   const Divider(),
-//                   const SizedBox(height: 16),
-//                   // Transmission, Fuel, and Passenger Capacity
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       _buildCarDetailRow(Icons.speed, 'Transmission', car.transmission ?? 'Automatic'),
-//                       _buildCarDetailRow(Icons.local_gas_station, 'Fuel', car.fuelType ?? 'Petrol'),
-//                       _buildCarDetailRow(Icons.people, 'Passengers', '${car.passengerCapacity ?? 'Unknown'}'),
-//                     ],
-//                   ),
-//                   const SizedBox(height: 16),
-//                   const Divider(),
-//                   const SizedBox(height: 16),
-//                   // Car Features
-//                   Text(
-//                     'Features',
-//                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//                   ),
-//                   const SizedBox(height: 10),
-//                   Wrap(
-//                     spacing: 10,
-//                     children: car.features.map((feature) {
-//                       return FeatureItem(icon: Icons.check, label: feature);
-//                     }).toList(),
-//                   ),
-//                   const SizedBox(height: 16),
-//                   const Divider(),
-//                   const SizedBox(height: 16),
-//                   // Car Reviews
-//                   Text(
-//                     'Reviews',
-//                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//                   ),
-//                   const SizedBox(height: 10),
-//                   Column(
-//                     children: car.reviews.map((review) {
-//                       return ReviewItem(
-//                         reviewer: review['reviewer'] as String,
-//                         review: review['review'] as String,
-//                         rating: review['rating'] as int,
-//                       );
-//                     }).toList(),
-//                   ),
-//                   const SizedBox(height: 16),
-//                   ElevatedButton(
-//                     onPressed: () {
-//                       // Book the car or perform another action
-//                     },
-//                     style: ElevatedButton.styleFrom(
-//                       backgroundColor: Colors.green,
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(20),
-//                       ),
-//                     ),
-//                     child: const Text('Book Now', style: TextStyle(color: Colors.white)),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   // Method to build car detail row for the info section
-//   Widget _buildCarDetailRow(IconData icon, String title, String value) {
-//     return Row(
-//       children: [
-//         Icon(icon, color: Colors.grey),
-//         const SizedBox(width: 8),
-//         Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-//             const SizedBox(height: 2),
-//             Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-//           ],
-//         ),
-//       ],
-//     );
-//   }
-// }
