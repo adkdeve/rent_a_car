@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 
+import 'carsdata/Car.dart';
+
 String fName = "Alee";
 String lName = "";
 String email = "john.doe@example.com";
@@ -114,3 +116,94 @@ final ThemeData darkTheme = ThemeData(
   ),
   iconTheme: const IconThemeData(color: Colors.black), // Black Icons
 );
+
+class FavoriteManager {
+  static final FavoriteManager _instance = FavoriteManager._internal();
+  factory FavoriteManager() => _instance;
+  FavoriteManager._internal();
+
+  final List<Car> _favoriteCars = [];
+  final ValueNotifier<List<Car>> favoriteNotifier = ValueNotifier([]);
+
+  List<Car> get favoriteCars => _favoriteCars;
+
+  void addFavorite(Car car) {
+    if (!_favoriteCars.contains(car)) {
+      _favoriteCars.add(car);
+      favoriteNotifier.value = [..._favoriteCars]; // Notify listeners
+    }
+  }
+
+  void removeFavorite(Car car) {
+    _favoriteCars.remove(car);
+    favoriteNotifier.value = [..._favoriteCars]; // Notify listeners
+  }
+
+  bool isFavorite(Car car) {
+    return _favoriteCars.contains(car);
+  }
+}
+
+class FavoriteButton extends StatefulWidget {
+  final Car car;
+
+  const FavoriteButton({
+    Key? key,
+    required this.car,
+  }) : super(key: key);
+
+  @override
+  _FavoriteButtonState createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<FavoriteButton> {
+  late bool _isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = FavoriteManager().isFavorite(widget.car);
+
+    // Listen for favorite list changes
+    FavoriteManager().favoriteNotifier.addListener(() {
+      if (mounted) {
+        setState(() {
+          _isFavorite = FavoriteManager().isFavorite(widget.car);
+        });
+      }
+    });
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      if (_isFavorite) {
+        FavoriteManager().removeFavorite(widget.car);
+      } else {
+        FavoriteManager().addFavorite(widget.car);
+      }
+      _isFavorite = !_isFavorite;
+    });
+  }
+
+  @override
+  void dispose() {
+    // Remove listener when the widget is disposed
+    FavoriteManager().favoriteNotifier.removeListener(() {});
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 8,
+      right: 8,
+      child: IconButton(
+        icon: Icon(
+          _isFavorite ? Icons.favorite : Icons.favorite_border,
+          color: _isFavorite ? Colors.red : Colors.white,
+        ),
+        onPressed: _toggleFavorite,
+      ),
+    );
+  }
+}

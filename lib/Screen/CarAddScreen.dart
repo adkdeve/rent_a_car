@@ -14,6 +14,7 @@ class CarAddScreen extends StatefulWidget {
 }
 
 class _CarAddScreenState extends State<CarAddScreen> {
+  // Existing controllers
   final TextEditingController _carNameController = TextEditingController();
   final TextEditingController _carModelController = TextEditingController();
   final TextEditingController _carYearController = TextEditingController();
@@ -22,8 +23,11 @@ class _CarAddScreenState extends State<CarAddScreen> {
   final TextEditingController _carEngineCapacityController = TextEditingController();
   final TextEditingController _namePlateController = TextEditingController();
 
+  // New controllers
+  final TextEditingController _carColorController = TextEditingController();
+  final TextEditingController _carFuelEfficiencyController = TextEditingController();
+
   // Feature toggles
-  bool _isAutomatic = false;
   bool _hasAC = false;
   bool _hasGPS = false;
   bool _hasBluetooth = false;
@@ -37,6 +41,9 @@ class _CarAddScreenState extends State<CarAddScreen> {
   String? _selectedTransmission = 'Manual'; // Default selection
   List<String> _transmissions = ['Manual', 'Automatic'];
 
+  String? _selectedDriveType = 'FWD'; // Default drive type
+  List<String> _driveTypes = ['FWD', 'RWD', 'AWD']; // Front, Rear, All-Wheel Drive
+
   List<XFile> _carImages = [];
   final ImagePicker _picker = ImagePicker();
   final CarRepository _carRepository = CarRepository();
@@ -44,9 +51,10 @@ class _CarAddScreenState extends State<CarAddScreen> {
   // Save images locally
   Future<String> _saveImageLocally(XFile image) async {
     final directory = await getApplicationDocumentsDirectory();
-    final String path = '${directory.path}/${_namePlateController.text}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final File localImage = await File(image.path).copy(path); // Save the image locally
-    return localImage.path; // Return the file path
+    final String path =
+        '${directory.path}/${_namePlateController.text}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final File localImage = await File(image.path).copy(path);
+    return localImage.path;
   }
 
   // Pick images for car
@@ -75,7 +83,6 @@ class _CarAddScreenState extends State<CarAddScreen> {
         _carPriceController.text.isNotEmpty &&
         _namePlateController.text.isNotEmpty &&
         _carImages.isNotEmpty) {
-
       // Save images locally and get their paths
       List<String> imagePaths = [];
       for (var image in _carImages) {
@@ -85,9 +92,9 @@ class _CarAddScreenState extends State<CarAddScreen> {
 
       // Add the new car to the repository
       Car newCar = Car(
-        id: _namePlateController.text, // Use name plate as ID
+        id: _namePlateController.text,
         name: _carNameController.text,
-        imageUrl: imagePaths, // Store all image paths
+        imageUrl: imagePaths,
         pricePerDay: _carPriceController.text,
         rating: '4.5', // Default rating
         details: 'Details about ${_carNameController.text}',
@@ -97,7 +104,7 @@ class _CarAddScreenState extends State<CarAddScreen> {
           if (_hasBluetooth) 'Bluetooth',
           if (_hasRearCamera) 'Rear Camera',
           if (_hasSunroof) 'Sunroof',
-        ], // Only add selected features
+        ],
         reviews: [],
         transmission: _selectedTransmission,
         fuelType: _selectedFuelType,
@@ -110,15 +117,15 @@ class _CarAddScreenState extends State<CarAddScreen> {
         sunroof: _hasSunroof,
         bluetoothConnectivity: _hasBluetooth,
         rearCamera: _hasRearCamera,
-        namePlate: _namePlateController.text, // Store name plate for display in detail screen
+        namePlate: _namePlateController.text,
+        color: _carColorController.text, // New field for car color
+        driveType: _selectedDriveType, // New field for drive type
+        fuelEfficiency: _carFuelEfficiencyController.text, // New field for fuel efficiency
       );
 
-      _carRepository.addCar(newCar); // Add car to the repository
+      _carRepository.addCar(newCar);
 
-      // Go back to the previous screen
       Navigator.pop(context);
-
-      print("Car details submitted successfully with images.");
     } else {
       print("Please fill all fields and add at least one image");
     }
@@ -135,7 +142,6 @@ class _CarAddScreenState extends State<CarAddScreen> {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            // Upload images...
             if (_carImages.length < 5)
               GestureDetector(
                 onTap: _pickImage,
@@ -157,8 +163,6 @@ class _CarAddScreenState extends State<CarAddScreen> {
                 ),
               ),
             const SizedBox(height: 10),
-
-            // Display the selected images
             if (_carImages.isNotEmpty)
               GridView.builder(
                 shrinkWrap: true,
@@ -198,7 +202,7 @@ class _CarAddScreenState extends State<CarAddScreen> {
               ),
             const SizedBox(height: 10),
 
-            // Form fields
+            // Car detail form fields
             _buildTextField(controller: _carNameController, label: 'Car Name', icon: Icons.directions_car),
             const SizedBox(height: 16),
             _buildTextField(controller: _carModelController, label: 'Car Model', icon: Icons.model_training),
@@ -212,9 +216,14 @@ class _CarAddScreenState extends State<CarAddScreen> {
             _buildTextField(controller: _carEngineCapacityController, label: 'Engine Capacity (cc)', icon: Icons.engineering, keyboardType: TextInputType.number),
             const SizedBox(height: 16),
             _buildTextField(controller: _namePlateController, label: 'Car Name Plate', icon: Icons.confirmation_number),
-            const SizedBox(height: 20),
 
-            // Dropdown for Fuel Type
+            // New fields for additional car details
+            const SizedBox(height: 16),
+            _buildTextField(controller: _carColorController, label: 'Car Color', icon: Icons.color_lens),
+            const SizedBox(height: 16),
+            _buildTextField(controller: _carFuelEfficiencyController, label: 'Fuel Efficiency (km/l)', icon: Icons.local_gas_station),
+
+            const SizedBox(height: 16),
             _buildDropdown(
               label: "Fuel Type",
               value: _selectedFuelType,
@@ -225,8 +234,7 @@ class _CarAddScreenState extends State<CarAddScreen> {
                 });
               },
             ),
-
-            // Dropdown for Transmission
+            const SizedBox(height: 16),
             _buildDropdown(
               label: "Transmission",
               value: _selectedTransmission,
@@ -237,8 +245,20 @@ class _CarAddScreenState extends State<CarAddScreen> {
                 });
               },
             ),
+            const SizedBox(height: 16),
+            _buildDropdown(
+              label: "Drive Type",
+              value: _selectedDriveType,
+              items: _driveTypes,
+              onChanged: (value) {
+                setState(() {
+                  _selectedDriveType = value!;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
 
-            // Toggle switches for additional features
+            // Feature toggles
             _buildFeatureSwitch("Air Conditioning (AC)", _hasAC, (value) {
               setState(() {
                 _hasAC = value;
@@ -338,3 +358,4 @@ class _CarAddScreenState extends State<CarAddScreen> {
     );
   }
 }
+

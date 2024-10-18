@@ -29,8 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const CategoryPage(),
-    const FavoritesPage(),
+    CategoryPage(),
+    FavoriteScreen(),
     const ProfilePage(),
   ];
 
@@ -552,19 +552,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                     child: _buildCarImage(car.imageUrl), // Helper function to load the car image
                   ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () {
-                        // Handle favorite button tap
-                      },
-                      child: const Icon(
-                        Icons.favorite_border,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  FavoriteButton(car: car), // Use the same global favorite button
                 ],
               ),
               const SizedBox(height: 10),
@@ -690,19 +678,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 // Favorite Button in top right corner
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Handle favorite action
-                    },
-                    child: const Icon(
-                      Icons.favorite_border,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                FavoriteButton(car: car), // Use the same global favorite button
               ],
             ),
             Padding(

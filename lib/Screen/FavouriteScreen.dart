@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:rent_a_car_project/carsdata/Car.dart';
+import 'package:rent_a_car_project/globalContent.dart';
+import 'package:rent_a_car_project/Screen/CarDetailScreen.dart';
 
-class FavoritesPage extends StatelessWidget {
-  const FavoritesPage({super.key});
+class FavoriteScreen extends StatelessWidget {
+  const FavoriteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Get the current theme data
     final theme = Theme.of(context);
-
-    // Dummy data for favorite items (replace with your actual data)
-    final List<String> favoriteItems = [];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorites', style: TextStyle(color: Colors.white)),
-        backgroundColor: theme.primaryColor, // Use the app's primary color
+        backgroundColor: theme.primaryColor,
       ),
-      body: favoriteItems.isEmpty
-          ? _buildEmptyFavorites(theme) // If no favorites, show the empty state
-          : _buildFavoritesList(favoriteItems), // Else, show the list of favorites
+      body: ValueListenableBuilder<List<Car>>(
+        valueListenable: FavoriteManager().favoriteNotifier,
+        builder: (context, favoriteCars, child) {
+          return favoriteCars.isEmpty
+              ? _buildEmptyFavorites(theme)
+              : _buildFavoritesList(favoriteCars, context);
+        },
+      ),
     );
   }
 
@@ -57,35 +61,43 @@ class FavoritesPage extends StatelessWidget {
     );
   }
 
-  // Method to display a list of favorite items
-  Widget _buildFavoritesList(List<String> favoriteItems) {
+  // Method to display a list of favorite cars
+  Widget _buildFavoritesList(List<Car> favoriteCars, BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: favoriteItems.length,
+      itemCount: favoriteCars.length,
       itemBuilder: (context, index) {
-        final item = favoriteItems[index];
+        final car = favoriteCars[index];
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 8),
           elevation: 4, // Add shadow for depth
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           child: ListTile(
-            leading: const CircleAvatar(
+            leading: CircleAvatar(
               radius: 30,
-              backgroundImage: NetworkImage('https://via.placeholder.com/100'), // Replace with the actual image URL
+              backgroundImage: NetworkImage(car.imageUrl.isNotEmpty
+                  ? car.imageUrl[0] // Display the first car image
+                  : 'https://via.placeholder.com/100'),
             ),
             title: Text(
-              item,
+              car.name,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            subtitle: const Text('Movie description goes here.'), // Replace with actual description
+            subtitle: Text('Price: ₹${car.pricePerDay}/day'), // Display the car price
             trailing: const Icon(
               Icons.favorite,
               color: Colors.red, // Favorite icon in red
             ),
             onTap: () {
-              // Navigate to detail page or handle tap
+              // Navigate to the car detail page on tap
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CarDetailScreen(car: car),
+                ),
+              );
             },
           ),
         );
@@ -93,3 +105,4 @@ class FavoritesPage extends StatelessWidget {
     );
   }
 }
+

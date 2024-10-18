@@ -1,24 +1,30 @@
 class Car {
   final String id;
   final String name;
-  final List<String> imageUrl; // <-- List of image URLs (instead of a single image)
+  final List<String> imageUrl; // List of image URLs
   final String rating;
   final String pricePerDay;
   final String details;
   final List<String> features;
   final List<Map<String, dynamic>> reviews;
-  final String? transmission; // Optional field
-  final String? fuelType; // Optional field
-  final int? passengerCapacity; // Optional field
-  final String? carType; // Optional field
-  final String? mileage; // Optional field
-  final String? engineCapacity; // Optional field
-  final bool? airConditioning; // Optional field
-  final bool? gps; // Optional field
-  final bool? sunroof; // Optional field
-  final bool? bluetoothConnectivity; // Optional field
-  final bool? rearCamera; // Optional field
   final String namePlate; // Required name plate field
+
+  // Optional fields
+  final String? transmission; // Manual, Automatic, etc.
+  final String? fuelType; // Petrol, Diesel, Electric, etc.
+  final int? passengerCapacity; // Number of passengers
+  final String? carType; // SUV, Sedan, etc.
+  final String? mileage; // Fuel efficiency (km/l)
+  final String? engineCapacity; // Engine size (cc)
+  final bool? airConditioning; // Whether the car has AC
+  final bool? gps; // Whether the car has GPS
+  final bool? sunroof; // Whether the car has a sunroof
+  final bool? bluetoothConnectivity; // Bluetooth support
+  final bool? rearCamera; // Rear-view camera
+  final String? color; // Color of the car
+  final String? driveType; // AWD, FWD, RWD
+  final String? fuelEfficiency; // Fuel efficiency (km/l)
+  final String? vin; // Vehicle Identification Number
 
   Car({
     required this.id,
@@ -41,5 +47,9 @@ class Car {
     this.sunroof,
     this.bluetoothConnectivity,
     this.rearCamera,
+    this.color,
+    this.driveType,
+    this.fuelEfficiency,
+    this.vin,
   });
 }
