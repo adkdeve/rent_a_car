@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:rent_a_car_project/Screen/HomeScreenContent.dart';
+import 'package:rent_a_car_project/providers/NotificationProvider.dart';
+import 'Screen/SplashScreen/SplashScreen.dart';
 import 'globalContent.dart';
-import 'Screen/SplashScreen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
   runApp(const RentXApp());
+
 }
 
 class RentXApp extends StatelessWidget {
@@ -12,21 +17,21 @@ class RentXApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'RentX',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
-      home: SplashScreen(),
+    return MultiProvider(
+      providers: [
+        // Add your providers here. You can add other providers as needed.
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+      ],
+      child: MaterialApp(
+        title: 'RentX',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
+        home: SplashScreen(),
+        debugShowCheckedModeBanner: false, // This hides the debug banner
+
+      ),
     );
   }
+
 }
-
-
-
-
-
-
-
-

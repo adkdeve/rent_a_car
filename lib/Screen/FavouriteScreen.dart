@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rent_a_car_project/carsdata/Car.dart';
+import 'package:rent_a_car_project/carModel/Car.dart';
 import 'package:rent_a_car_project/globalContent.dart';
 import 'package:rent_a_car_project/Screen/CarDetailScreen.dart';
 
@@ -16,7 +16,7 @@ class FavoriteScreen extends StatelessWidget {
         backgroundColor: theme.primaryColor,
       ),
       body: ValueListenableBuilder<List<Car>>(
-        valueListenable: FavoriteManager().favoriteNotifier,
+        valueListenable: FavoriteManager.instance.favoriteNotifier, // Correct way to access singleton
         builder: (context, favoriteCars, child) {
           return favoriteCars.isEmpty
               ? _buildEmptyFavorites(theme)

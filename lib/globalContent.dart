@@ -1,144 +1,90 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'carModel/Car.dart';
 
-import 'carsdata/Car.dart';
+class GlobalConfig {
+  static String name = '';
+  static String email = '';
+  static String phoneNumber = '';
+  static String newPassword = '';
+  static String currentPassword = '';
+  static File? image;
+}
 
-String fName = "Alee";
-String lName = "";
-String email = "john.doe@example.com";
-String phoneNumber = "03121234567";
-String nPassword = '';
-String currentPassword = 'ali123';
-File? image;
+// Define the colors
+const Color swatch1 = Color(0xFFeff2f5); // Light Blue color (swatch1)
+const Color swatch2 = Color(0xFFa2d0de); // Light Cyan color (swatch2)
+const Color swatch3 = Color(0xFF0f84b3); // Baby Blue color (swatch3)
+const Color swatch4 = Color(0xFF99b7c0); // Grey color (swatch4)
+const Color swatch5 = Color(0xFF1e2225); // Dark Grey color (swatch5)
+const Color swatch6 = Color(0xFF0a6292); // Deep Blue color (swatch6)
 
-List<Map<String, String>> cars = [
-  {
-    "name": "Tesla Model S",
-    "price": "\$80,000",
-    "imageUrl": "https://link_to_tesla_image.com",
-  },
-  {
-    "name": "Ford Mustang",
-    "price": "\$55,000",
-    "imageUrl": "https://link_to_mustang_image.com",
-  },
-  {
-    "name": "BMW M4",
-    "price": "\$65,000",
-    "imageUrl": "https://link_to_bmw_image.com",
-  },
-  {
-    "name": "Audi A8",
-    "price": "\$75,000",
-    "imageUrl": "https://link_to_audi_image.com",
-  },
-  {
-    "name": "Mercedes G-Class",
-    "price": "\$120,000",
-    "imageUrl": "https://link_to_mercedes_image.com",
-  },
-  {
-    "name": "Porsche 911",
-    "price": "\$100,000",
-    "imageUrl": "https://link_to_porsche_image.com",
-  },
-  {
-    "name": "Chevrolet Camaro",
-    "price": "\$45,000",
-    "imageUrl": "https://link_to_camaro_image.com",
-  },
-  {
-    "name": "Lamborghini Aventador",
-    "price": "\$400,000",
-    "imageUrl": "https://link_to_lamborghini_image.com",
-  },
-];
+class AppTheme {
+  static final ThemeData light = ThemeData(
+    primaryColor: swatch3,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: swatch1,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: swatch3,
+      foregroundColor: Colors.white,
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: swatch3,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: swatch5),
+      bodyMedium: TextStyle(color: swatch4),
+    ),
+    iconTheme: const IconThemeData(color: swatch5),
+  );
 
-// Define the colors using the swatches
-const Color swatch1 = Color(0xFFeff2f5);
-const Color swatch2 = Color(0xFFa2d0de);
-const Color swatch3 = Color(0xFF0f84b3);
-const Color swatch4 = Color(0xFF99b7c0);
-const Color swatch5 = Color(0xFF1e2225);
-const Color swatch6 = Color(0xFF0a6292);
-
-class AppColors {
-  static const MaterialColor primarySwatch = MaterialColor(
-    0xFF4477C3,
-    <int, Color>{
-      50: Color(0xFFE4F0FF),
-      100: Color(0xFFB2D8FF),
-      200: Color(0xFF80BFFF),
-      300: Color(0xFF4DA3FF),
-      400: Color(0xFF2598FF),
-      500: Color(0xFF4477C3),
-      600: Color(0xFF2E5B9E),
-      700: Color(0xFF1F4678),
-      800: Color(0xFF0F2D54),
-      900: Color(0xFF001B33),
-    },
+  static final ThemeData dark = ThemeData(
+    brightness: Brightness.dark,
+    primaryColor: swatch6,
+    scaffoldBackgroundColor: swatch5,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: swatch6,
+      foregroundColor: Colors.black,
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: swatch6,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: swatch4),
+    ),
+    iconTheme: const IconThemeData(color: Colors.black),
   );
 }
 
-
-final ThemeData lightTheme = ThemeData(
-  primaryColor: swatch3, // Swatch 3 for primary color
-  brightness: Brightness.light,
-  scaffoldBackgroundColor: swatch1, // Swatch 1 for background
-  appBarTheme: const AppBarTheme(
-    backgroundColor: swatch3, // Swatch 3 for AppBar background
-    foregroundColor: Colors.white, // AppBar title color
-  ),
-  floatingActionButtonTheme: const FloatingActionButtonThemeData(
-    backgroundColor: swatch3, // Swatch 3 for FAB background
-  ),
-  textTheme: const TextTheme(
-    bodyLarge: TextStyle(color: swatch5), // Swatch 5 for text color
-    bodyMedium: TextStyle(color: swatch4), // Swatch 4 for grey text
-  ),
-  iconTheme: const IconThemeData(color: swatch5), // Swatch 5 for icon color
-);
-
-final ThemeData darkTheme = ThemeData(
-  brightness: Brightness.dark,
-  primaryColor: swatch6, // Swatch 6 for primary color
-  scaffoldBackgroundColor: swatch5, // Swatch 5 for background
-  appBarTheme: const AppBarTheme(
-    backgroundColor: swatch6, // Swatch 6 for AppBar background
-    foregroundColor: Colors.black, // Black AppBar title
-  ),
-  floatingActionButtonTheme: const FloatingActionButtonThemeData(
-    backgroundColor: swatch6, // Swatch 6 for FAB background
-  ),
-  textTheme: const TextTheme(
-    bodyLarge: TextStyle(color: Colors.white), // White text
-    bodyMedium: TextStyle(color: swatch4), // Swatch 4 for light grey text
-  ),
-  iconTheme: const IconThemeData(color: Colors.black), // Black Icons
-);
-
 class FavoriteManager {
-  static final FavoriteManager _instance = FavoriteManager._internal();
-  factory FavoriteManager() => _instance;
+  // Singleton instance
+  static final FavoriteManager instance = FavoriteManager._internal();
   FavoriteManager._internal();
 
   final List<Car> _favoriteCars = [];
   final ValueNotifier<List<Car>> favoriteNotifier = ValueNotifier([]);
 
-  List<Car> get favoriteCars => _favoriteCars;
+  // Getter for favorite cars
+  List<Car> get favoriteCars => List.unmodifiable(_favoriteCars);
 
+  // Add a car to favorites
   void addFavorite(Car car) {
     if (!_favoriteCars.contains(car)) {
       _favoriteCars.add(car);
-      favoriteNotifier.value = [..._favoriteCars]; // Notify listeners
+      favoriteNotifier.value = List.unmodifiable(_favoriteCars); // Notify listeners
     }
   }
 
+  // Remove a car from favorites
   void removeFavorite(Car car) {
-    _favoriteCars.remove(car);
-    favoriteNotifier.value = [..._favoriteCars]; // Notify listeners
+    if (_favoriteCars.contains(car)) {
+      _favoriteCars.remove(car);
+      favoriteNotifier.value = List.unmodifiable(_favoriteCars); // Notify listeners
+    }
   }
 
+  // Check if a car is a favorite
   bool isFavorite(Car car) {
     return _favoriteCars.contains(car);
   }
@@ -158,37 +104,42 @@ class FavoriteButton extends StatefulWidget {
 
 class _FavoriteButtonState extends State<FavoriteButton> {
   late bool _isFavorite;
+  late final VoidCallback _listener;
 
   @override
   void initState() {
     super.initState();
-    _isFavorite = FavoriteManager().isFavorite(widget.car);
 
-    // Listen for favorite list changes
-    FavoriteManager().favoriteNotifier.addListener(() {
+    // Initialize the favorite state
+    _isFavorite = FavoriteManager.instance.isFavorite(widget.car);
+
+    // Define the listener
+    _listener = () {
       if (mounted) {
         setState(() {
-          _isFavorite = FavoriteManager().isFavorite(widget.car);
+          _isFavorite = FavoriteManager.instance.isFavorite(widget.car);
         });
       }
-    });
+    };
+
+    // Add the listener
+    FavoriteManager.instance.favoriteNotifier.addListener(_listener);
   }
 
+  // Toggle favorite status
   void _toggleFavorite() {
-    setState(() {
-      if (_isFavorite) {
-        FavoriteManager().removeFavorite(widget.car);
-      } else {
-        FavoriteManager().addFavorite(widget.car);
-      }
-      _isFavorite = !_isFavorite;
-    });
+    if (_isFavorite) {
+      FavoriteManager.instance.removeFavorite(widget.car);
+    } else {
+      FavoriteManager.instance.addFavorite(widget.car);
+    }
+    // _isFavorite is updated automatically via the listener
   }
 
   @override
   void dispose() {
-    // Remove listener when the widget is disposed
-    FavoriteManager().favoriteNotifier.removeListener(() {});
+    // Remove the listener to avoid memory leaks
+    FavoriteManager.instance.favoriteNotifier.removeListener(_listener);
     super.dispose();
   }
 

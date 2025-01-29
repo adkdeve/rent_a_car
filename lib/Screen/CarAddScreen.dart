@@ -1,10 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import '../carsdata/CarRepository.dart';
-import '../carsdata/Car.dart';
+import '../carModel/CarRepository.dart';
+import '../carModel/Car.dart';
 import '../globalContent.dart';
+import 'dart:convert';
 
 class CarAddScreen extends StatefulWidget {
   const CarAddScreen({super.key});
@@ -16,23 +18,23 @@ class CarAddScreen extends StatefulWidget {
 class _CarAddScreenState extends State<CarAddScreen> {
   // Existing controllers
   final TextEditingController _carNameController = TextEditingController();
-  final TextEditingController _carModelController = TextEditingController();
-  final TextEditingController _carYearController = TextEditingController();
+  final TextEditingController _carBrandController = TextEditingController(); // New controller for brand
   final TextEditingController _carPriceController = TextEditingController();
-  final TextEditingController _carMileageController = TextEditingController();
-  final TextEditingController _carEngineCapacityController = TextEditingController();
-  final TextEditingController _namePlateController = TextEditingController();
-
-  // New controllers
+  final TextEditingController _carDescriptionController = TextEditingController(); // New controller for description
+  final TextEditingController _carNamePlateController = TextEditingController();
   final TextEditingController _carColorController = TextEditingController();
-  final TextEditingController _carFuelEfficiencyController = TextEditingController();
+
+  late bool _isLoading = false; // Add this variable to track loading state
 
   // Feature toggles
   bool _hasAC = false;
-  bool _hasGPS = false;
   bool _hasBluetooth = false;
-  bool _hasRearCamera = false;
   bool _hasSunroof = false;
+
+  Future<String> _convertImageToBase64(XFile image) async {
+    final bytes = await File(image.path).readAsBytes();
+    return base64Encode(bytes);
+  }
 
   // Dropdown options
   String? _selectedFuelType = 'Petrol'; // Default selection
@@ -41,8 +43,8 @@ class _CarAddScreenState extends State<CarAddScreen> {
   String? _selectedTransmission = 'Manual'; // Default selection
   List<String> _transmissions = ['Manual', 'Automatic'];
 
-  String? _selectedDriveType = 'FWD'; // Default drive type
-  List<String> _driveTypes = ['FWD', 'RWD', 'AWD']; // Front, Rear, All-Wheel Drive
+  String? _selectedCarType; // Default selection for car type
+  List<String> _carTypes = ['Sedan', 'SUV', 'Hatchback', 'Convertible', 'Truck']; // Define car types
 
   List<XFile> _carImages = [];
   final ImagePicker _picker = ImagePicker();
@@ -52,7 +54,7 @@ class _CarAddScreenState extends State<CarAddScreen> {
   Future<String> _saveImageLocally(XFile image) async {
     final directory = await getApplicationDocumentsDirectory();
     final String path =
-        '${directory.path}/${_namePlateController.text}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        '${directory.path}/${_carNamePlateController.text}_${DateTime.now().millisecondsSinceEpoch}.jpg';
     final File localImage = await File(image.path).copy(path);
     return localImage.path;
   }
@@ -78,56 +80,74 @@ class _CarAddScreenState extends State<CarAddScreen> {
   // Submit the form and add the car to the repository
   void _submitForm() async {
     if (_carNameController.text.isNotEmpty &&
-        _carModelController.text.isNotEmpty &&
-        _carYearController.text.isNotEmpty &&
+        _carBrandController.text.isNotEmpty &&
         _carPriceController.text.isNotEmpty &&
-        _namePlateController.text.isNotEmpty &&
+        _carDescriptionController.text.isNotEmpty &&
+        _carNamePlateController.text.isNotEmpty &&
+        _selectedCarType != null && // Validate car type
         _carImages.isNotEmpty) {
-      // Save images locally and get their paths
-      List<String> imagePaths = [];
-      for (var image in _carImages) {
-        String imagePath = await _saveImageLocally(image);
-        imagePaths.add(imagePath);
+      setState(() {
+        _isLoading = true; // Show the loading indicator
+      });
+
+      try {
+        // Convert images to Base64
+        List<String> base64Images = [];
+        for (var image in _carImages) {
+          String base64Image = await _convertImageToBase64(image);
+          base64Images.add(base64Image);
+        }
+
+        // Create the car object with the details
+        Car newCar = Car(
+          id: _carNamePlateController.text,
+          name: _carNameController.text,
+          brand: _carBrandController.text,
+          imageUrl: base64Images,
+          pricePerDay: _carPriceController.text,
+          rating: '4.5', // Default rating
+          description: _carDescriptionController.text,
+          features: [
+            if (_hasAC) 'Air Conditioning',
+            if (_hasBluetooth) 'Bluetooth',
+            if (_hasSunroof) 'Sunroof',
+          ],
+          reviews: [],
+          reservations: [], // Initialize reservations as an empty list
+          namePlate: _carNamePlateController.text,
+          transmission: _selectedTransmission,
+          fuelType: _selectedFuelType,
+          carType: _selectedCarType ?? '', // Use selected car type here
+          airConditioning: _hasAC,
+          sunroof: _hasSunroof,
+          bluetoothConnectivity: _hasBluetooth,
+          color: _carColorController.text,
+          isFeatured: true,
+          ownerID: FirebaseAuth.instance.currentUser!.uid, // Use current user ID as owner
+        );
+
+        // Upload the car details to Firestore
+        await _carRepository.addCarToFirestore(newCar);
+
+        if (mounted) {
+          Navigator.pop(context); // Navigate back after success
+        }
+      } catch (e) {
+        print("Error adding car: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to add car: $e")),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false; // Hide the loading indicator
+          });
+        }
       }
-
-      // Add the new car to the repository
-      Car newCar = Car(
-        id: _namePlateController.text,
-        name: _carNameController.text,
-        imageUrl: imagePaths,
-        pricePerDay: _carPriceController.text,
-        rating: '4.5', // Default rating
-        details: 'Details about ${_carNameController.text}',
-        features: [
-          if (_hasAC) 'Air Conditioning',
-          if (_hasGPS) 'GPS',
-          if (_hasBluetooth) 'Bluetooth',
-          if (_hasRearCamera) 'Rear Camera',
-          if (_hasSunroof) 'Sunroof',
-        ],
-        reviews: [],
-        transmission: _selectedTransmission,
-        fuelType: _selectedFuelType,
-        passengerCapacity: 5,
-        carType: _carModelController.text,
-        mileage: _carMileageController.text,
-        engineCapacity: _carEngineCapacityController.text,
-        airConditioning: _hasAC,
-        gps: _hasGPS,
-        sunroof: _hasSunroof,
-        bluetoothConnectivity: _hasBluetooth,
-        rearCamera: _hasRearCamera,
-        namePlate: _namePlateController.text,
-        color: _carColorController.text, // New field for car color
-        driveType: _selectedDriveType, // New field for drive type
-        fuelEfficiency: _carFuelEfficiencyController.text, // New field for fuel efficiency
-      );
-
-      _carRepository.addCar(newCar);
-
-      Navigator.pop(context);
     } else {
-      print("Please fill all fields and add at least one image");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields and add at least one image.")),
+      );
     }
   }
 
@@ -138,167 +158,157 @@ class _CarAddScreenState extends State<CarAddScreen> {
         title: const Text('Add Your Car for Rent', style: TextStyle(color: Colors.white)),
         backgroundColor: swatch3,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            if (_carImages.length < 5)
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: swatch4),
+      body: Stack(
+        children: [
+          _isLoading // Show loading indicator if the form is submitting
+              ? const Center(
+            child: CircularProgressIndicator(),
+          )
+              : Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
+              children: [
+                if (_carImages.length < 5)
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: swatch4),
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.camera_alt, color: swatch5, size: 50),
+                          SizedBox(height: 10),
+                          Text('Upload Car Images', style: TextStyle(color: swatch5)),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.camera_alt, color: swatch5, size: 50),
-                      SizedBox(height: 10),
-                      Text('Upload Car Images', style: TextStyle(color: swatch5)),
-                    ],
-                  ),
-                ),
-              ),
-            const SizedBox(height: 10),
-            if (_carImages.isNotEmpty)
-              GridView.builder(
-                shrinkWrap: true,
-                itemCount: _carImages.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemBuilder: (context, index) {
-                  return Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: FileImage(File(_carImages[index].path)),
-                            fit: BoxFit.cover,
+                const SizedBox(height: 10),
+                if (_carImages.isNotEmpty)
+                  GridView.builder(
+                    shrinkWrap: true,
+                    itemCount: _carImages.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              image: DecorationImage(
+                                image: FileImage(File(_carImages[index].path)),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _carImages.removeAt(index);
-                            });
-                          },
-                          child: const Icon(Icons.remove_circle, color: Colors.red),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            const SizedBox(height: 10),
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _carImages.removeAt(index);
+                                });
+                              },
+                              child: const Icon(Icons.remove_circle, color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                const SizedBox(height: 10),
 
-            // Car detail form fields
-            _buildTextField(controller: _carNameController, label: 'Car Name', icon: Icons.directions_car),
-            const SizedBox(height: 16),
-            _buildTextField(controller: _carModelController, label: 'Car Model', icon: Icons.model_training),
-            const SizedBox(height: 16),
-            _buildTextField(controller: _carYearController, label: 'Year of Manufacture', icon: Icons.calendar_today, keyboardType: TextInputType.number),
-            const SizedBox(height: 16),
-            _buildTextField(controller: _carPriceController, label: 'Price Per Day (₹)', icon: Icons.attach_money, keyboardType: TextInputType.number),
-            const SizedBox(height: 16),
-            _buildTextField(controller: _carMileageController, label: 'Mileage (km/l)', icon: Icons.speed, keyboardType: TextInputType.number),
-            const SizedBox(height: 16),
-            _buildTextField(controller: _carEngineCapacityController, label: 'Engine Capacity (cc)', icon: Icons.engineering, keyboardType: TextInputType.number),
-            const SizedBox(height: 16),
-            _buildTextField(controller: _namePlateController, label: 'Car Name Plate', icon: Icons.confirmation_number),
+                // Car detail form fields
+                _buildTextField(controller: _carNameController, label: 'Car Name', icon: Icons.directions_car),
+                const SizedBox(height: 16),
+                _buildTextField(controller: _carBrandController, label: 'Car Brand', icon: Icons.branding_watermark),
+                const SizedBox(height: 16),
+                _buildTextField(controller: _carPriceController, label: 'Price Per Day (₹)', icon: Icons.attach_money, keyboardType: TextInputType.number),
+                const SizedBox(height: 16),
+                _buildTextField(controller: _carDescriptionController, label: 'Description', icon: Icons.description),
+                const SizedBox(height: 16),
+                _buildTextField(controller: _carNamePlateController, label: 'Car Name Plate', icon: Icons.confirmation_number),
+                const SizedBox(height: 16),
+                _buildTextField(controller: _carColorController, label: 'Car Color', icon: Icons.color_lens),
 
-            // New fields for additional car details
-            const SizedBox(height: 16),
-            _buildTextField(controller: _carColorController, label: 'Car Color', icon: Icons.color_lens),
-            const SizedBox(height: 16),
-            _buildTextField(controller: _carFuelEfficiencyController, label: 'Fuel Efficiency (km/l)', icon: Icons.local_gas_station),
+                const SizedBox(height: 16),
+                _buildDropdown(
+                  label: "Fuel Type",
+                  value: _selectedFuelType,
+                  items: _fuelTypes,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedFuelType = value!;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildDropdown(
+                  label: "Car Type",
+                  value: _selectedCarType,
+                  items: _carTypes,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCarType = value!;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildDropdown(
+                  label: "Transmission",
+                  value: _selectedTransmission,
+                  items: _transmissions,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedTransmission = value!;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
 
-            const SizedBox(height: 16),
-            _buildDropdown(
-              label: "Fuel Type",
-              value: _selectedFuelType,
-              items: _fuelTypes,
-              onChanged: (value) {
-                setState(() {
-                  _selectedFuelType = value!;
-                });
-              },
+                // Feature toggles
+                _buildFeatureSwitch("Air Conditioning (AC)", _hasAC, (value) {
+                  setState(() {
+                    _hasAC = value;
+                  });
+                }),
+                _buildFeatureSwitch("Bluetooth Connectivity", _hasBluetooth, (value) {
+                  setState(() {
+                    _hasBluetooth = value;
+                  });
+                }),
+                _buildFeatureSwitch("Sunroof", _hasSunroof, (value) {
+                  setState(() {
+                    _hasSunroof = value;
+                  });
+                }),
+
+                const SizedBox(height: 20),
+
+                // Submit button
+                ElevatedButton(
+                  onPressed: _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: swatch3,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    textStyle: const TextStyle(fontSize: 18),
+                  ),
+                  child: const Text('Submit Car Details', style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            _buildDropdown(
-              label: "Transmission",
-              value: _selectedTransmission,
-              items: _transmissions,
-              onChanged: (value) {
-                setState(() {
-                  _selectedTransmission = value!;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildDropdown(
-              label: "Drive Type",
-              value: _selectedDriveType,
-              items: _driveTypes,
-              onChanged: (value) {
-                setState(() {
-                  _selectedDriveType = value!;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-
-            // Feature toggles
-            _buildFeatureSwitch("Air Conditioning (AC)", _hasAC, (value) {
-              setState(() {
-                _hasAC = value;
-              });
-            }),
-            _buildFeatureSwitch("GPS Navigation", _hasGPS, (value) {
-              setState(() {
-                _hasGPS = value;
-              });
-            }),
-            _buildFeatureSwitch("Bluetooth Connectivity", _hasBluetooth, (value) {
-              setState(() {
-                _hasBluetooth = value;
-              });
-            }),
-            _buildFeatureSwitch("Rear Camera", _hasRearCamera, (value) {
-              setState(() {
-                _hasRearCamera = value;
-              });
-            }),
-            _buildFeatureSwitch("Sunroof", _hasSunroof, (value) {
-              setState(() {
-                _hasSunroof = value;
-              });
-            }),
-
-            const SizedBox(height: 20),
-
-            // Submit button
-            ElevatedButton(
-              onPressed: _submitForm,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: swatch3,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                textStyle: const TextStyle(fontSize: 18),
-              ),
-              child: const Text('Submit Car Details', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -336,7 +346,6 @@ class _CarAddScreenState extends State<CarAddScreen> {
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          prefixIcon: Icon(Icons.local_gas_station, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
         ),
         items: items.map((String item) {
           return DropdownMenuItem<String>(
@@ -358,4 +367,3 @@ class _CarAddScreenState extends State<CarAddScreen> {
     );
   }
 }
-

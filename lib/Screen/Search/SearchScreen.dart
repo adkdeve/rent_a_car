@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../carsdata/Car.dart';
-import '../carsdata/CarRepository.dart';
-import 'CarDetailScreen.dart';
+
+import '../../carModel/Car.dart';
+import '../../carModel/CarRepository.dart';
+import '../CarDetailScreen.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -15,13 +16,37 @@ class _SearchPageState extends State<SearchPage> {
   List<Car> _allCars = [];
   List<Car> _filteredCars = [];
   final CarRepository _carRepository = CarRepository();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _allCars = _carRepository.getCars(); // Fetch cars from the repository
-    _filteredCars = _allCars; // Initially display all cars
+    _fetchCars(); // Fetch cars from the repository
   }
+
+  // Fetch cars asynchronously
+  bool _isFetching = false;
+
+  Future<void> _fetchCars() async {
+    if (_isFetching) return; // Prevent duplicate calls
+    _isFetching = true;
+
+    try {
+      final cars = await _carRepository.getAllCars(); // Fetch cars
+      setState(() {
+        _allCars = cars; // Ensure _allCars is not appended multiple times
+        _filteredCars = cars;
+      });
+    } catch (e) {
+      print('Error fetching cars: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+      _isFetching = false;
+    }
+  }
+
 
   // Filters the list of cars based on the search query
   void _filterCars(String query) {
@@ -42,30 +67,34 @@ class _SearchPageState extends State<SearchPage> {
       appBar: AppBar(
         title: const Text(
           'Search Cars',
-          style: TextStyle(color: Colors.white), // White text for contrast
+          style: TextStyle(color: Colors.white),
         ),
       ),
-      body: Column(
+      body: _isLoading
+          ? const Center(
+        child: CircularProgressIndicator(),
+      )
+          : Column(
         children: [
-          // Search bar for filtering cars
           _buildSearchBar(),
           const SizedBox(height: 10),
-          // Display search results
           _filteredCars.isEmpty
               ? const Center(
             child: Padding(
               padding: EdgeInsets.all(16.0),
               child: Text(
                 "No Cars Found",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
           )
               : Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(8.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Display cars in 2 columns
+              gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
               ),
@@ -78,7 +107,8 @@ class _SearchPageState extends State<SearchPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CarDetailScreen(car: car),
+                        builder: (context) =>
+                            CarDetailScreen(car: car),
                       ),
                     );
                   },
@@ -89,19 +119,21 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     child: Stack(
                       children: [
-                        // Image background with error handling
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: _buildImage(car.imageUrl.isNotEmpty ? car.imageUrl[0] : ''),
+                          child: _buildImage(
+                              car.imageUrl.isNotEmpty
+                                  ? car.imageUrl[0]
+                                  : ''),
                         ),
-                        // Text overlay at the bottom
                         Align(
                           alignment: Alignment.bottomCenter,
                           child: Container(
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.4),
-                              borderRadius: const BorderRadius.vertical(
+                              borderRadius:
+                              const BorderRadius.vertical(
                                 bottom: Radius.circular(10),
                               ),
                             ),
@@ -134,34 +166,34 @@ class _SearchPageState extends State<SearchPage> {
       height: 50,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white, // Set a background color for the search bar
+        color: Colors.white,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5), // Shadow color
-            blurRadius: 5, // Soft shadow
-            offset: const Offset(0, 3), // Shadow offset
+            color: Colors.grey.withOpacity(0.5),
+            blurRadius: 5,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: TextField(
-        style: const TextStyle(color: Colors.black), // Text color
+        style: const TextStyle(color: Colors.black),
         decoration: InputDecoration(
           hintText: "Search for cars...",
-          hintStyle: const TextStyle(color: Colors.grey), // Hint text color
+          hintStyle: const TextStyle(color: Colors.grey),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Colors.transparent, // Make the fill color transparent
+          fillColor: Colors.transparent,
           suffixIcon: const Icon(
             Icons.search,
-            color: Colors.grey, // Search icon color
+            color: Colors.grey,
           ),
         ),
         onChanged: (query) {
-          _filterCars(query); // Call search filter function on input change
+          _filterCars(query);
         },
       ),
     );
@@ -176,7 +208,7 @@ class _SearchPageState extends State<SearchPage> {
         width: double.infinity,
         height: double.infinity,
         errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.broken_image, size: 50); // Fallback for broken images
+          return const Icon(Icons.broken_image, size: 50);
         },
       );
     } else if (imageUrl.isNotEmpty) {
@@ -186,11 +218,11 @@ class _SearchPageState extends State<SearchPage> {
         width: double.infinity,
         height: double.infinity,
         errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.broken_image, size: 50); // Fallback for broken images
+          return const Icon(Icons.broken_image, size: 50);
         },
       );
     } else {
-      return const Icon(Icons.broken_image, size: 50); // Fallback for missing image URL
+      return const Icon(Icons.broken_image, size: 50);
     }
   }
 }

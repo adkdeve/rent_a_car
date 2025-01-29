@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../carsdata/Car.dart';
+import 'package:rent_a_car_project/Screen/BookingProcessScreen.dart';
+import '../carModel/Car.dart';
+import '../carModel/CarRepository.dart';
+import 'dart:typed_data';
 
 class CarDetailScreen extends StatelessWidget {
   final Car car;
@@ -25,215 +29,157 @@ class CarDetailScreen extends StatelessWidget {
           ),
         ),
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top image section with PageView for multiple images
-              SizedBox(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.3, // 30% height of the screen
-                child: GestureDetector(
-                  onTap: () => _showFullScreenImages(context, car.imageUrl), // On tap, show full screen images
-                  child: PageView.builder(
-                    itemCount: car.imageUrl.length, // Number of images
-                    itemBuilder: (context, index) {
-                      return _buildImage(car.imageUrl[index]); // Display each image
-                    },
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top image section with PageView for multiple images
+                SizedBox(
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height * 0.3, // 30% height of the screen
+                  child: GestureDetector(
+                    onTap: () => _showFullScreenImages(context, car.imageUrl),
+                    child: PageView.builder(
+                      itemCount: car.imageUrl.length, // Number of images
+                      itemBuilder: (context, index) {
+                        return _buildImage(car.imageUrl[index]); // Display each image
+                      },
+                    ),
                   ),
                 ),
-              ),
 
-              // Title Section: Car Name, Name Plate, and Price/Day
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      car.name,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                // Title Section: Car Name, Name Plate, and Price/Day
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        car.name,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Name Plate: ${car.namePlate}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Name Plate: ${car.namePlate}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '₹${car.pricePerDay}/day',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                          const SizedBox(width: 16),
+                          Text(
+                            '₹${car.pricePerDay}/day',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Divider(),
+
+                // Tab Section (Description, Features, Reviews)
+                const TabBar(
+                  labelColor: Colors.green,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: Colors.green,
+                  tabs: [
+                    Tab(text: 'Description'),
+                    Tab(text: 'Features'),
+                    Tab(text: 'Reviews'),
                   ],
                 ),
-              ),
 
-              const Divider(),
-
-              // Tab Section (Description, Features, Reviews)
-              const TabBar(
-                labelColor: Colors.green,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.green,
-                tabs: [
-                  Tab(text: 'Description'),
-                  Tab(text: 'Features'),
-                  Tab(text: 'Reviews'),
-                ],
-              ),
-
-              // Tab View Section (Changes with tabs)
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    _buildDescriptionTab(context),
-                    _buildFeaturesTab(),
-                    _buildReviewsTab(),
-                  ],
+                // Tab View Section
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6, // Provide fixed height for TabBarView
+                  child: TabBarView(
+                    children: [
+                      _buildDescriptionTab(context),
+                      _buildFeaturesTab(),
+                      _buildReviewsTab(),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  // Build the Description tab content
-  Widget _buildDescriptionTab(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Car Details',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            car.details,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
-          // Transmission, Fuel, and Passenger Capacity
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildCarDetailRow(Icons.speed, 'Transmission', car.transmission ?? 'Automatic'),
-              _buildCarDetailRow(Icons.local_gas_station, 'Fuel', car.fuelType ?? 'Petrol'),
-              _buildCarDetailRow(Icons.people, 'Passengers', '${car.passengerCapacity ?? 'Unknown'}'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build the Features tab content
-  Widget _buildFeaturesTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Car Features',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            children: car.features.map((feature) {
-              return FeatureItem(icon: Icons.check, label: feature);
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build the Reviews tab content
-  Widget _buildReviewsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Customer Reviews',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Column(
-            children: car.reviews.map((review) {
-              return ReviewItem(
-                reviewer: review['reviewer'] as String,
-                review: review['review'] as String,
-                rating: review['rating'] as int,
+        bottomNavigationBar: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingProcessScreen(car: car),
+                ),
               );
-            }).toList(),
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            child: const Text(
+              "Book Now",
+              style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  // Helper method to build car detail row for info section
-  Widget _buildCarDetailRow(IconData icon, String title, String value) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.grey),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-          ],
         ),
-      ],
+      ),
     );
   }
 
   // Updated image builder to handle both network and local images
   Widget _buildImage(String imageUrl) {
-    return Center(
-      child: imageUrl.startsWith('http')
-          ? Image.network(
+    if (imageUrl.startsWith('http')) {
+      return Image.network(
         imageUrl,
-        fit: BoxFit.contain, // Ensure the image scales properly
-        width: double.infinity,
-        height: double.infinity,
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.broken_image, size: 50); // Fallback icon for broken images
-        },
-      )
-          : Image.file(
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image), // Fallback for broken images
+      );
+    } else if (imageUrl.startsWith('data:image/')) {
+      try {
+        final String base64Data = imageUrl.split(',').last; // Extract base64 string after the comma
+        print("Base64 Data: $base64Data"); // Log the base64 data for debugging
+        final Uint8List bytes = base64Decode(base64Data);  // Decode base64 string into bytes
+        print("Decoded base64 image data length: ${bytes.length}"); // Log the length of the byte array
+
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image), // Fallback for broken images
+        );
+      } catch (e) {
+        print("Error decoding base64 image: $e");
+        return const Icon(Icons.broken_image); // Fallback in case of error
+      }
+    } else if (imageUrl.isNotEmpty) {
+      return Image.file(
         File(imageUrl),
-        fit: BoxFit.contain, // Ensure the image scales properly
-        width: double.infinity,
-        height: double.infinity,
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.broken_image, size: 50); // Fallback icon for broken images
-        },
-      ),
-    );
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image), // Fallback for broken images
+      );
+    } else {
+      return const Icon(Icons.broken_image); // Display broken image icon if image URL is empty
+    }
   }
 
   // Full-screen image view for multiple images
@@ -264,6 +210,136 @@ class CarDetailScreen extends StatelessWidget {
     );
   }
 
+  // Build the Description tab content
+  Widget _buildDescriptionTab(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Car Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            car.description,
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+          const Divider(),
+          // Transmission, Fuel, and Passenger Capacity
+          Wrap(
+            spacing: 16,
+            children: [
+              _buildCarDetailRow(Icons.speed, 'Transmission', car.transmission ?? 'Automatic'),
+              _buildCarDetailRow(Icons.local_gas_station, 'Fuel', car.fuelType ?? 'Petrol'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build the Features tab content
+  Widget _buildFeaturesTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Car Features',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: car.features.map((feature) {
+              return FeatureItem(icon: Icons.check, label: feature);
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build the Reviews tab content
+  Widget _buildReviewsTab() {
+    CarRepository repository = CarRepository();
+
+    // Define the delete review logic
+    void _deleteReview(String carId, String reviewerName) async {
+      try {
+        // Call the deleteReview function with the carId and reviewerName to delete the review
+        await repository.deleteReview(carId, reviewerName);
+        print("Review deleted successfully!");
+      } catch (e) {
+        print("Error deleting review: $e");
+      }
+    }
+
+    // Define the modify review logic
+    void _modifyReview(String carId, String reviewerName, String newReview, int newRating) async {
+      try {
+        // Call the updateReview function with the carId, reviewerName, and updated review details
+        await repository.updateReview(carId, reviewerName, newRating, newReview);
+        print("Review updated successfully!");
+      } catch (e) {
+        print("Error modifying review: $e");
+      }
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Customer Reviews',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          // Check if there are reviews, else show a message
+          if (car.reviews.isEmpty)
+            const Text("No reviews yet.")
+          else
+          // Display the list of reviews
+            Column(
+              children: car.reviews.map((review) {
+                return ReviewItem(
+                  reviewer: review['reviewer'],   // Use 'reviewer' for the display name
+                  review: review['review'],      // The actual review text
+                  rating: review['rating'],      // Rating (integer value)
+                  onDelete: () => _deleteReview(car.id, review['reviewer']),  // Deletion callback
+                  onModify: (newReview, newRating) => _modifyReview(car.id, review['reviewer'], newReview, newRating),  // Modification callback
+                );
+              }).toList(),
+            )
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build car detail row for info section
+  Widget _buildCarDetailRow(IconData icon, String title, String value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.grey),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 2),
+            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 class FeatureItem extends StatelessWidget {
@@ -288,12 +364,16 @@ class ReviewItem extends StatelessWidget {
   final String reviewer;
   final String review;
   final int rating;
+  final Function onDelete;
+  final Function(String, int) onModify;
 
   const ReviewItem({
     super.key,
     required this.reviewer,
     required this.review,
     required this.rating,
+    required this.onDelete,
+    required this.onModify,
   });
 
   @override
@@ -318,7 +398,82 @@ class ReviewItem extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 8),
+        // Row(
+        //   children: [
+        //     // Modify Button
+        //     TextButton(
+        //       onPressed: () {
+        //         _showModifyDialog(context);
+        //       },
+        //       child: const Text("Modify"),
+        //     ),
+        //     // Delete Button
+        //     TextButton(
+        //       onPressed: () {
+        //         onDelete(); // Triggers the delete logic
+        //       },
+        //       child: const Text("Delete"),
+        //     ),
+        //   ],
+        // ),
       ],
+    );
+  }
+
+  // Show a dialog to modify the review
+  void _showModifyDialog(BuildContext context) {
+    final TextEditingController reviewController = TextEditingController(text: review);
+    int newRating = rating;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Modify Review"),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: reviewController,
+                decoration: const InputDecoration(labelText: "Review"),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: List.generate(
+                  5,
+                      (index) => IconButton(
+                    icon: Icon(
+                      Icons.star,
+                      color: index < newRating ? Colors.orange : Colors.grey,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      newRating = index + 1;
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onModify(reviewController.text, newRating); // Calls the modify function
+              },
+              child: const Text("Save"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancel"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

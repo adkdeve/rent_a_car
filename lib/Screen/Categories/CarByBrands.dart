@@ -1,49 +1,53 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:rent_a_car_project/carModel/Car.dart';
 import 'package:rent_a_car_project/carModel/CarRepository.dart';
-import 'CarDetailScreen.dart';
-import 'dart:typed_data';
+import '../CarDetailScreen.dart';
 
-class FeaturedCarScreen extends StatefulWidget {
-  const FeaturedCarScreen({super.key});
+class CarByBrands extends StatefulWidget {
+  final String brandName;
+
+  const CarByBrands({
+    required this.brandName,
+    Key? key,
+  }) : super(key: key);
 
   @override
-  _FeaturedCarScreenState createState() => _FeaturedCarScreenState();
+  _CarByBrandsState createState() => _CarByBrandsState();
 }
 
-class _FeaturedCarScreenState extends State<FeaturedCarScreen> {
+class _CarByBrandsState extends State<CarByBrands> {
   bool isGridView = true; // Toggle between grid and list view
-  String selectedSort = 'Rating'; // Default filter option
-  late Future<List<Car>> filteredCarsFuture; // Future for filtered cars
+  String selectedSort = 'Price'; // Default filter option
+  late Future<List<Car>> filteredCars; // Now it's a Future<List<Car>>
   final CarRepository repository = CarRepository();
 
   @override
   void initState() {
     super.initState();
-    filteredCarsFuture = repository.getFeaturedCars(); // Initialize filteredCarsFuture with all cars
+    filteredCars = repository.getCarByBrand(widget.brandName); // Initialize filteredCars with all cars
   }
 
   // Method to sort cars by price or rating
   void _applySort(String criteria) {
     setState(() {
-      filteredCarsFuture = Future(() async {
-        List<Car> cars = await repository.getFeaturedCars(); // Get cars first
+      filteredCars = filteredCars.then((carsList) {
         if (criteria == 'Price') {
-          cars.sort((a, b) {
+          // Remove non-numeric characters from price and convert to double for sorting
+          carsList.sort((a, b) {
             double priceA = double.tryParse(a.pricePerDay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
             double priceB = double.tryParse(b.pricePerDay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
             return priceA.compareTo(priceB);
           });
         } else if (criteria == 'Rating') {
-          cars.sort((a, b) {
+          // Convert rating to double for sorting
+          carsList.sort((a, b) {
             double ratingA = double.tryParse(a.rating) ?? 0;
             double ratingB = double.tryParse(b.rating) ?? 0;
             return ratingB.compareTo(ratingA); // Sort by rating in descending order
           });
         }
-        return cars; // Return the sorted list
+        return carsList;
       });
     });
   }
@@ -151,6 +155,7 @@ class _FeaturedCarScreenState extends State<FeaturedCarScreen> {
     );
   }
 
+  // Updated method to handle both network and local images
   Widget _buildImage(String imageUrl) {
     if (imageUrl.startsWith('http')) {
       return Image.network(
@@ -158,24 +163,6 @@ class _FeaturedCarScreenState extends State<FeaturedCarScreen> {
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image), // Fallback for broken images
       );
-    } else if (imageUrl.startsWith('data:image/')) {
-      // Handle base64 encoded images
-      try {
-        final String base64Data = imageUrl.split(',').last; // Extract base64 string after the comma
-        final Uint8List bytes = base64Decode(base64Data);  // Decode base64 string into bytes
-
-        // Log the base64 string length for debugging purposes
-        print("Decoded base64 image data length: ${bytes.length}");
-
-        return Image.memory(
-          bytes,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image), // Fallback for broken images
-        );
-      } catch (e) {
-        print("Error decoding base64 image: $e");
-        return const Icon(Icons.broken_image); // Fallback in case of error
-      }
     } else if (imageUrl.isNotEmpty) {
       return Image.file(
         File(imageUrl),
@@ -224,24 +211,27 @@ class _FeaturedCarScreenState extends State<FeaturedCarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Featured Cars', style: TextStyle(color: Colors.white)),
+        title: const Text('Cars by Brand', style: TextStyle(color: Colors.white)),
       ),
-      body: FutureBuilder<List<Car>>(
-        future: filteredCarsFuture, // Use the Future for filteredCars
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator()); // Show loading spinner
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}')); // Show error if any
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No cars available.')); // Handle no data
-          } else {
-            List<Car> filteredCars = snapshot.data!; // Get the list of cars
-            return Column(
-              children: [
-                _buildFilterBar(),
-                Expanded(
-                  child: isGridView
+      body: Column(
+        children: [
+          // Filter Bar
+          _buildFilterBar(),
+
+          // Car List/Grid
+          Expanded(
+            child: FutureBuilder<List<Car>>(
+              future: filteredCars,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Center(child: Text('Error loading cars.'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No cars available.'));
+                } else {
+                  List<Car> cars = snapshot.data!;
+                  return isGridView
                       ? GridView.builder(
                     padding: const EdgeInsets.all(8.0),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -250,24 +240,25 @@ class _FeaturedCarScreenState extends State<FeaturedCarScreen> {
                       mainAxisSpacing: 8.0,
                       childAspectRatio: 0.7, // Adjust child aspect ratio to prevent overflow
                     ),
-                    itemCount: filteredCars.length,
+                    itemCount: cars.length,
                     itemBuilder: (context, index) {
-                      return _buildCarCard(filteredCars[index], context);
+                      return _buildCarCard(cars[index], context);
                     },
                   )
                       : ListView.builder(
                     padding: const EdgeInsets.all(8.0),
-                    itemCount: filteredCars.length,
+                    itemCount: cars.length,
                     itemBuilder: (context, index) {
-                      return _buildCarCard(filteredCars[index], context);
+                      return _buildCarCard(cars[index], context);
                     },
-                  ),
-                ),
-              ],
-            );
-          }
-        },
+                  );
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
