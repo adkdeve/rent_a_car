@@ -68,23 +68,25 @@ class BookingDetailsScreen extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    // Now you can use 'type' anywhere in your UI logic
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Booking Details'),
-        backgroundColor: Colors.blue,
+        backgroundColor: colorScheme.primary, // Use primary color for app bar background
+        foregroundColor: colorScheme.onPrimary, // Use onPrimary color for text and icons
         elevation: 0,
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('bookings').doc(bookingId).get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary), // Use primary color for progress indicator
               ),
             );
           }
@@ -97,12 +99,15 @@ class BookingDetailsScreen extends StatelessWidget {
                   Icon(
                     Icons.error_outline,
                     size: 64,
-                    color: Colors.grey[400],
+                    color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for icon
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Booking details not found.',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for text
+                    ),
                   ),
                 ],
               ),
@@ -149,20 +154,24 @@ class BookingDetailsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Booking Information',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onBackground, // Use onBackground color for text
+                          ),
                         ),
                         const SizedBox(height: 16),
-                        _buildDetailRow(Icons.directions_car, 'Car Name', booking['carId']),
-                        _buildDetailRow(Icons.person, 'Renter Name', booking['renterDetails']['name']),
-                        _buildDetailRow(Icons.phone, 'Phone Number', booking['renterDetails']['phoneNumber']),
-                        _buildDetailRow(Icons.calendar_today, 'Pickup Date', booking['pickupDate'].toDate().toString()),
-                        _buildDetailRow(Icons.calendar_today, 'Drop-off Date', booking['dropOffDate'].toDate().toString()),
-                        _buildDetailRow(Icons.timer, 'Duration', '${booking['duration']} days'),
-                        _buildDetailRow(Icons.attach_money, 'Total Amount', '₹${booking['totalAmount']}'),
+                        _buildDetailRow(Icons.directions_car, 'Car Name', booking['carId'], colorScheme),
+                        _buildDetailRow(Icons.person, 'Renter Name', booking['renterDetails']['name'], colorScheme),
+                        _buildDetailRow(Icons.phone, 'Phone Number', booking['renterDetails']['phoneNumber'], colorScheme),
+                        _buildDetailRow(Icons.calendar_today, 'Pickup Date', booking['pickupDate'].toDate().toString(), colorScheme),
+                        _buildDetailRow(Icons.calendar_today, 'Drop-off Date', booking['dropOffDate'].toDate().toString(), colorScheme),
+                        _buildDetailRow(Icons.timer, 'Duration', '${booking['duration']} days', colorScheme),
+                        _buildDetailRow(Icons.attach_money, 'Total Amount', '₹${booking['totalAmount']}', colorScheme),
                         const SizedBox(height: 16),
-                        _buildStatusRow(statusIconColor, statusText, statusColor), // Use the passed status
+                        _buildStatusRow(statusIconColor, statusText, statusColor, colorScheme), // Use the passed status
                       ],
                     ),
                   ),
@@ -204,12 +213,12 @@ class BookingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  Widget _buildDetailRow(IconData icon, String label, String value, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blue),
+          Icon(icon, color: colorScheme.primary), // Use primary color for icon
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -217,7 +226,10 @@ class BookingDetailsScreen extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for label
+                  ),
                 ),
                 if (label == 'Car Name') // Add "View" button for the Car Name
                   Row(
@@ -225,13 +237,17 @@ class BookingDetailsScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           value,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onBackground, // Use onBackground color for text
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Builder(
                         builder: (context) => IconButton(
-                          icon: const Icon(Icons.directions_car),
+                          icon: Icon(Icons.directions_car, color: colorScheme.primary), // Use primary color for icon
                           onPressed: () => _navigateToCarDetailScreen(context, value),
                         ),
                       ),
@@ -240,7 +256,11 @@ class BookingDetailsScreen extends StatelessWidget {
                 else
                   Text(
                     value,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onBackground, // Use onBackground color for text
+                    ),
                   ),
               ],
             ),
@@ -251,15 +271,18 @@ class BookingDetailsScreen extends StatelessWidget {
   }
 
   // New Widget to display the booking status
-  Widget _buildStatusRow(Color iconColor, String statusText, Color textColor) {
+  Widget _buildStatusRow(Color iconColor, String statusText, Color textColor, ColorScheme colorScheme) {
     return Row(
       children: [
         Icon(Icons.assignment_turned_in, color: iconColor), // Status icon
         const SizedBox(width: 16),
         Text(
-          'Status: '
-              '$statusText',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+          'Status: $statusText',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
         ),
       ],
     );

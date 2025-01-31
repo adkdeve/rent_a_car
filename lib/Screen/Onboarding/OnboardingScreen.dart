@@ -7,7 +7,9 @@ import '../Auth | Profile/SignUpScreen.dart';
 class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return MaterialApp(
       theme: ThemeData.light(), // Default light theme
@@ -17,14 +19,14 @@ class OnboardingScreen extends StatelessWidget {
         headerBackgroundColor: Colors.transparent,
         finishButtonText: 'Register',
         finishButtonStyle: FinishButtonStyle(
-          backgroundColor: Colors.blueAccent,
+          backgroundColor: colorScheme.primary, // Use primary color for button background
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
         ),
         skipTextButton: Text(
           'Skip',
-          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+          style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
         ),
         trailing: InkWell(
           onTap: () {
@@ -37,7 +39,7 @@ class OnboardingScreen extends StatelessWidget {
           child: Text(
             'Login',
             style: TextStyle(
-              color: Colors.blueAccent,
+              color: colorScheme.primary, // Use primary color for text
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -83,8 +85,9 @@ class OnboardingScreen extends StatelessWidget {
         required String description,
         required IconData icon,
       }) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textColor = colorScheme.onBackground; // Use onBackground color for text
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -94,7 +97,7 @@ class OnboardingScreen extends StatelessWidget {
           Icon(
             icon,
             size: 100,
-            color: Colors.blueAccent,
+            color: colorScheme.primary, // Use primary color for icon
           ),
           const SizedBox(height: 40),
           Text(
@@ -102,7 +105,7 @@ class OnboardingScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: textColor, // Adjust based on theme
+              color: textColor, // Use onBackground color for text
             ),
             textAlign: TextAlign.center,
           ),

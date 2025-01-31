@@ -33,9 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    CategoriesScreen(collectionPath: 'categories/doc2/categoriesByType',
-      title: 'Cars by Type',),
-    FavoriteScreen(),
+    CategoriesScreen(
+      collectionPath: 'categories/doc2/categoriesByType',
+      title: 'Cars by Type',
+    ),
+    const FavoriteScreen(),
     const ProfilePage(),
   ];
 
@@ -65,8 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = Theme.of(context).colorScheme.primary; // Or primarySwatch if used in your theme
-    final navColor = Theme.of(context).primaryColor;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       extendBody: true,
@@ -79,20 +81,20 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         shape: const CircleBorder(),
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface, // Use surface color for FAB background
         elevation: 6,
-        child: Icon(Icons.add, color: themeColor),
+        child: Icon(Icons.add, color: colorScheme.primary), // Use primary color for FAB icon
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _buildBottomNavBar(navColor),
+      bottomNavigationBar: _buildBottomNavBar(colorScheme),
       body: _pages[_currentIndex],
     );
   }
 
-  Widget _buildBottomNavBar(Color navColor) {
+  Widget _buildBottomNavBar(ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface, // Use surface color for bottom nav bar background
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
@@ -109,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
             child: FlashyTabBar(
-              backgroundColor: navColor,
+              backgroundColor: colorScheme.primary, // Use primary color for tab bar background
               selectedIndex: _currentIndex,
               showElevation: true,
               onItemSelected: (index) {
@@ -121,26 +123,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 FlashyTabBarItem(
                   icon: const Icon(Icons.home),
                   title: const Text('Home'),
-                  activeColor: Colors.white,
-                  inactiveColor: Colors.white70,
+                  activeColor: colorScheme.onPrimary, // Use onPrimary color for active tab
+                  inactiveColor: colorScheme.onPrimary.withOpacity(0.7), // Use onPrimary with opacity for inactive tab
                 ),
                 FlashyTabBarItem(
                   icon: const Icon(Icons.category),
                   title: const Text('Categories'),
-                  activeColor: Colors.white,
-                  inactiveColor: Colors.white70,
+                  activeColor: colorScheme.onPrimary,
+                  inactiveColor: colorScheme.onPrimary.withOpacity(0.7),
                 ),
                 FlashyTabBarItem(
                   icon: const Icon(Icons.favorite),
                   title: const Text('Favorites'),
-                  activeColor: Colors.white,
-                  inactiveColor: Colors.white70,
+                  activeColor: colorScheme.onPrimary,
+                  inactiveColor: colorScheme.onPrimary.withOpacity(0.7),
                 ),
                 FlashyTabBarItem(
                   icon: const Icon(Icons.person),
                   title: const Text('Profile'),
-                  activeColor: Colors.white,
-                  inactiveColor: Colors.white70,
+                  activeColor: colorScheme.onPrimary,
+                  inactiveColor: colorScheme.onPrimary.withOpacity(0.7),
                 ),
               ],
             ),
@@ -149,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 }
 
 class HomePage extends StatefulWidget {
@@ -284,7 +285,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = Theme.of(context).primaryColor;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: SafeArea(
@@ -295,16 +297,16 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Section
-                _buildHeaderSection(context, themeColor),
+                _buildHeaderSection(context, colorScheme),
 
                 // Categories Section
-                _buildCategoriesSection(themeColor),
+                _buildCategoriesSection(colorScheme),
 
                 // Featured Cars Section
-                _buildFeaturedCarsSection(themeColor),
+                _buildFeaturedCarsSection(colorScheme),
 
                 // Recent Cars Section
-                _buildRecentCarsSection(themeColor),
+                _buildRecentCarsSection(colorScheme),
               ],
             ),
           ),
@@ -314,12 +316,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Builds the Header Section (Location, Profile, Search)
-  Widget _buildHeaderSection(BuildContext context, Color themeColor) {
+  Widget _buildHeaderSection(BuildContext context, ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [themeColor, themeColor],
+          colors: [colorScheme.primary, colorScheme.primary.withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -327,34 +329,40 @@ class _HomePageState extends State<HomePage> {
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Location and Profile Section
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Location
               Row(
                 children: [
-                  const Icon(Icons.location_on, color: Colors.white),
-                  const SizedBox(width: 4),
+                  const Icon(Icons.location_on, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
                   Text(
                     _location, // Displays the updated location (either area name or coordinates)
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    'Hi, ${GlobalConfig.name}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                ],
+              ),
+              // Profile and Notification Badge
+              Row(
+                children: [
+                  // Profile Avatar
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -368,7 +376,7 @@ class _HomePageState extends State<HomePage> {
                       radius: 20,
                       backgroundImage: GlobalConfig.image != null
                           ? FileImage(GlobalConfig.image!)
-                          : const AssetImage("assets/avatar.jpg"),
+                          : const AssetImage("assets/avatar.jpg") as ImageProvider,
                     ),
                   ),
                 ],
@@ -376,19 +384,29 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 20),
+          // Greeting Text
           const Text(
-            'Welcome Back!',
+            'Welcome Back,',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 10),
-          TextField(
-            readOnly: true, // Prevents any text input
+          const SizedBox(height: 4),
+          Text(
+            GlobalConfig.name,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Floating Search Bar
+          GestureDetector(
             onTap: () {
-              // Navigate to SearchPage when the TextField is tapped
+              // Navigate to SearchPage when the search bar is tapped
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -396,16 +414,32 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             },
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              hintText: 'Search for cars...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: colorScheme.surface, // Use surface color for search bar background
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.search, color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for icon
+                  const SizedBox(width: 8),
+                  Text(
+                    'Search for cars...',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for text
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -414,46 +448,45 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Builds the Categories Section
-  Widget _buildCategoriesSection(Color themeColor) {
+  Widget _buildCategoriesSection(ColorScheme colorScheme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "Categories",
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onBackground, // Use onBackground color for text
                 ),
               ),
-              ElevatedButton(
+              TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CategoriesScreen(
-                        collectionPath: 'categories/doc1/categoriesByBrand',
-                        title: 'Cars by Brand',
-                      ),
+                      builder: (context) => CategoriesScreen(collectionPath: 'categories/doc1/categoriesByBrand',
+                        title: 'Cars by Brand',),
                     ),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: themeColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                child: Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.primary, // Use primary color for text
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                 ),
-                child: const Text('More', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           FutureBuilder<List<Map<String, String>>>(
             future: _categoriesFuture,
             builder: (context, snapshot) {
@@ -470,7 +503,7 @@ class _HomePageState extends State<HomePage> {
               final categories = snapshot.data!;
 
               return SizedBox(
-                height: 140,
+                height: 120,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: categories.length,
@@ -478,7 +511,6 @@ class _HomePageState extends State<HomePage> {
                     final category = categories[index];
                     return GestureDetector(
                       onTap: () {
-                        // Navigate to CarByBrands if brand is selected
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -487,18 +519,25 @@ class _HomePageState extends State<HomePage> {
                         );
                       },
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 16),
+                        padding: const EdgeInsets.only(right: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               child: Container(
-                                width: 90,
-                                height: 90,
+                                width: 80,
+                                height: 80,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[300], // Grey background color
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: colorScheme.surface, // Use surface color for background
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 8,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
                                 child: _getImageWidget(category['imageUrl']!),
                               ),
@@ -506,10 +545,10 @@ class _HomePageState extends State<HomePage> {
                             const SizedBox(height: 8),
                             Text(
                               category['brand']!,
-                              style: const TextStyle(
-                                fontSize: 16,
+                              style: TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.black87,
+                                color: colorScheme.onBackground, // Use onBackground color for text
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -528,43 +567,44 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Builds the Featured Cars Section
-  Widget _buildFeaturedCarsSection(Color themeColor) {
+  Widget _buildFeaturedCarsSection(ColorScheme colorScheme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "Featured Cars",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: colorScheme.onBackground, // Use onBackground color for text
                 ),
               ),
-              ElevatedButton(
+              TextButton(
                 onPressed: () {
-                  // Navigate to featured cars list
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const FeaturedCarScreen()),
+                      builder: (context) => FeaturedCarScreen(),
+                    ),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: themeColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                child: Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.primary, // Use primary color for text
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                 ),
-                child: const Text('More', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           _buildFeaturedCarsList(featuredCars),
         ],
       ),
@@ -604,62 +644,119 @@ class _HomePageState extends State<HomePage> {
 
   // Individual Featured Car Card
   Widget _buildFeaturedCarCard(Car car) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: () {
-        // Navigate to CarDetailScreen when the card is tapped
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CarDetailScreen(car: car), // Pass the selected car
+            builder: (context) => CarDetailScreen(car: car),
           ),
         );
       },
       child: SizedBox(
-        width: 220, // Card width for featured cars
+        width: 220,
         child: Card(
           elevation: 5,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16), // Rounded corners for the card
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Car Image with a favorite button on top right
+              // Car Image with Gradient Overlay
               Stack(
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: _buildCarImage(car.imageUrl), // Helper function to load the car image
+                    child: ShaderMask(
+                      shaderCallback: (rect) {
+                        return LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                        ).createShader(rect);
+                      },
+                      blendMode: BlendMode.darken,
+                      child: _buildCarImage(car.imageUrl),
+                    ),
                   ),
-                  FavoriteButton(car: car), // Use the same global favorite button
+                  // Favorite Button
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: FavoriteButton(car: car),
+                  ),
+                  // Car Name and Rating
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          car.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.star, color: Colors.amber, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              car.rating.toString(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 10),
+              // Car Details
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      car.name,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      car.transmission ?? 'Unknown',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.settings, size: 16, color: colorScheme.onSurface.withOpacity(0.6)),
+                        const SizedBox(width: 4),
+                        Text(
+                          car.transmission ?? 'Unknown',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Icon(Icons.local_gas_station, size: 16, color: colorScheme.onSurface.withOpacity(0.6)),
+                        const SizedBox(width: 4),
+                        Text(
+                          car.fuelType ?? 'Unknown',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '${car.pricePerDay}/day',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.green,
                       ),
@@ -675,17 +772,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Builds the Recent Cars Section
-  Widget _buildRecentCarsSection(Color themeColor) {
+  Widget _buildRecentCarsSection(ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Recent Cars", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ],
+          Text(
+            "Recent Cars",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onBackground, // Use onBackground color for text
+            ),
           ),
           const SizedBox(height: 12),
           FutureBuilder<List<Car>>(
@@ -723,6 +822,9 @@ class _HomePageState extends State<HomePage> {
 
   // Individual Recent Car Card with RevealOnScroll applied
   Widget _buildRecentCarCard(Car car, BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: () {
         // Navigate to car details page using the Car object
@@ -741,12 +843,23 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Car Image with Gradient Overlay and Rating
             Stack(
               children: [
-                // Car Image
+                // Car Image with rounded corners and gradient overlay
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: _buildCarImage(car.imageUrl),
+                  child: ShaderMask(
+                    shaderCallback: (rect) {
+                      return LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                      ).createShader(rect);
+                    },
+                    blendMode: BlendMode.darken,
+                    child: _buildCarImage(car.imageUrl),
+                  ),
                 ),
                 // Rating in top left corner
                 Positioned(
@@ -771,42 +884,105 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 // Favorite Button in top right corner
-                FavoriteButton(car: car), // Use the same global favorite button
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: FavoriteButton(car: car), // Use the same global favorite button
+                ),
               ],
             ),
+            // Car Details Section
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title and Rent/Day in a Row
+                  // Car Name and Price Per Day
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         car.name,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         '₹${car.pricePerDay}/day',
-                        style: const TextStyle(fontSize: 14, color: Colors.green),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
+                  // Divider
                   const Divider(),
+                  const SizedBox(height: 8),
+                  // Transmission, Fuel Type, Mileage, and Seating
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Transmission
+                      _buildDetailWithIcon(
+                        icon: Icons.settings,
+                        text: car.transmission ?? 'Unknown',
+                      ),
+                      // Fuel Type
+                      _buildDetailWithIcon(
+                        icon: Icons.local_gas_station,
+                        text: car.fuelType ?? 'Unknown',
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        car.transmission ?? 'Unknown',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      // Mileage
+                      _buildDetailWithIcon(
+                        icon: Icons.speed,
+                        text: '${car.brand} km',
                       ),
-                      Text(
-                        car.fuelType ?? 'Unknown',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      // Seating Capacity
+                      _buildDetailWithIcon(
+                        icon: Icons.people,
+                        text: '${car.brand} Seats',
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Call-to-Action Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CarDetailScreen(car: car),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary, // Use primary color for button background
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        'View Details',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onPrimary, // Use onPrimary color for button text
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -814,6 +990,26 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+    );
+  }
+
+  // Helper function to build a detail row with an icon
+  Widget _buildDetailWithIcon({required IconData icon, required String text}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: colorScheme.onSurface.withOpacity(0.6)),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            color: colorScheme.onSurface.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 
@@ -876,7 +1072,6 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
-
 }
 
 class FirestorePopulator {

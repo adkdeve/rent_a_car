@@ -47,7 +47,6 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-
   // Filters the list of cars based on the search query
   void _filterCars(String query) {
     setState(() {
@@ -63,29 +62,38 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Search Cars',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: colorScheme.onPrimary), // Use onPrimary color for text
         ),
+        backgroundColor: colorScheme.primary, // Use primary color for app bar background
       ),
       body: _isLoading
-          ? const Center(
-        child: CircularProgressIndicator(),
+          ? Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary), // Use primary color for progress indicator
+        ),
       )
           : Column(
         children: [
-          _buildSearchBar(),
+          _buildSearchBar(colorScheme),
           const SizedBox(height: 10),
           _filteredCars.isEmpty
-              ? const Center(
+              ? Center(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Text(
                 "No Cars Found",
                 style: TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onBackground, // Use onBackground color for text
+                ),
               ),
             ),
           )
@@ -161,12 +169,12 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   // Build Search bar
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(ColorScheme colorScheme) {
     return Container(
       height: 50,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface, // Use surface color for background
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
@@ -177,19 +185,19 @@ class _SearchPageState extends State<SearchPage> {
         ],
       ),
       child: TextField(
-        style: const TextStyle(color: Colors.black),
+        style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
         decoration: InputDecoration(
           hintText: "Search for cars...",
-          hintStyle: const TextStyle(color: Colors.grey),
+          hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for hint text
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide.none,
           ),
           filled: true,
           fillColor: Colors.transparent,
-          suffixIcon: const Icon(
+          suffixIcon: Icon(
             Icons.search,
-            color: Colors.grey,
+            color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for icon
           ),
         ),
         onChanged: (query) {

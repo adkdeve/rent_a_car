@@ -10,12 +10,18 @@ class NotificationScreen extends StatelessWidget {
       create: (_) => NotificationProvider(),
       child: Consumer<NotificationProvider>(
         builder: (context, provider, child) {
+          final theme = Theme.of(context);
+          final colorScheme = theme.colorScheme;
+          final textTheme = theme.textTheme;
+
           if (provider.userId.isEmpty) {
-            return const Scaffold(
+            return Scaffold(
               body: Center(
                 child: Text(
                   'Error: User not logged in.',
-                  style: TextStyle(color: Colors.red, fontSize: 16),
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.error,
+                  ),
                 ),
               ),
             );
@@ -23,16 +29,19 @@ class NotificationScreen extends StatelessWidget {
 
           return Scaffold(
             appBar: AppBar(
-              title: const Text(
+              title: Text(
                 'Notifications',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onPrimary,
+                ),
               ),
-              backgroundColor: Colors.blue,
+              backgroundColor: colorScheme.primary,
               elevation: 0,
             ),
             body: provider.notifications.isEmpty
-                ? _buildNoNotificationsWidget()
-                : _buildNotificationsList(context, provider),
+                ? _buildNoNotificationsWidget(colorScheme, textTheme)
+                : _buildNotificationsList(context, provider, colorScheme, textTheme),
           );
         },
       ),
@@ -41,7 +50,11 @@ class NotificationScreen extends StatelessWidget {
 
   // Widget for displaying the notifications list
   Widget _buildNotificationsList(
-      BuildContext context, NotificationProvider provider) {
+      BuildContext context,
+      NotificationProvider provider,
+      ColorScheme colorScheme,
+      TextTheme textTheme,
+      ) {
     return ListView.builder(
       itemCount: provider.notifications.length,
       itemBuilder: (context, index) {
@@ -60,7 +73,7 @@ class NotificationScreen extends StatelessWidget {
             await provider.deleteNotification(notificationId); // Delete from Firebase
           },
           background: Container(
-            color: Colors.red,
+            color: colorScheme.error,
             alignment: Alignment.centerLeft,
             child: const Padding(
               padding: EdgeInsets.all(16),
@@ -77,20 +90,19 @@ class NotificationScreen extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            color: isRead ? Colors.grey[200] : Colors.white, // Mark read notifications with different color
+            color: isRead ? colorScheme.surfaceVariant : colorScheme.surface, // Mark read notifications with different color
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
-              leading: const Icon(
+              leading: Icon(
                 Icons.notifications,
-                color: Colors.green,
+                color: colorScheme.primary,
                 size: 30,
               ),
               title: Text(
                 title,
-                style: const TextStyle(
+                style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.black,
+                  color: colorScheme.onSurface,
                 ),
               ),
               subtitle: Column(
@@ -98,14 +110,15 @@ class NotificationScreen extends StatelessWidget {
                 children: [
                   Text(
                     message,
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     formatTimestamp(timestamp), // You can still use the utility method
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -126,7 +139,7 @@ class NotificationScreen extends StatelessWidget {
   }
 
   // Widget for displaying when no notifications are present
-  Widget _buildNoNotificationsWidget() {
+  Widget _buildNoNotificationsWidget(ColorScheme colorScheme, TextTheme textTheme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -134,14 +147,13 @@ class NotificationScreen extends StatelessWidget {
           Icon(
             Icons.notifications_off,
             size: 64,
-            color: Colors.grey[400],
+            color: colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 16),
           Text(
             'No notifications yet.',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
+            style: textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],

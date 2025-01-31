@@ -13,20 +13,24 @@ class CarDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return DefaultTabController(
       length: 3, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: colorScheme.onPrimary), // Use onPrimary color for icon
             onPressed: () {
               Navigator.pop(context);
             },
           ),
           title: Text(
             car.name,
-            style: const TextStyle(color: Colors.white), // White title text
+            style: TextStyle(color: colorScheme.onPrimary), // Use onPrimary color for text
           ),
+          backgroundColor: colorScheme.primary, // Use primary color for app bar background
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -56,9 +60,10 @@ class CarDetailScreen extends StatelessWidget {
                     children: [
                       Text(
                         car.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
+                          color: colorScheme.onBackground, // Use onBackground color for text
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -67,9 +72,9 @@ class CarDetailScreen extends StatelessWidget {
                           Flexible(
                             child: Text(
                               'Name Plate: ${car.namePlate}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey,
+                                color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for text
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -92,11 +97,11 @@ class CarDetailScreen extends StatelessWidget {
                 const Divider(),
 
                 // Tab Section (Description, Features, Reviews)
-                const TabBar(
-                  labelColor: Colors.green,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: Colors.green,
-                  tabs: [
+                TabBar(
+                  labelColor: colorScheme.primary, // Use primary color for selected tab text
+                  unselectedLabelColor: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for unselected tab text
+                  indicatorColor: colorScheme.primary, // Use primary color for indicator
+                  tabs: const [
                     Tab(text: 'Description'),
                     Tab(text: 'Features'),
                     Tab(text: 'Reviews'),
@@ -108,9 +113,9 @@ class CarDetailScreen extends StatelessWidget {
                   height: MediaQuery.of(context).size.height * 0.6, // Provide fixed height for TabBarView
                   child: TabBarView(
                     children: [
-                      _buildDescriptionTab(context),
-                      _buildFeaturesTab(),
-                      _buildReviewsTab(),
+                      _buildDescriptionTab(context, colorScheme),
+                      _buildFeaturesTab(colorScheme),
+                      _buildReviewsTab(colorScheme),
                     ],
                   ),
                 ),
@@ -131,15 +136,18 @@ class CarDetailScreen extends StatelessWidget {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: colorScheme.primary, // Use primary color for button background
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
               ),
             ),
-            child: const Text(
+            child: Text(
               "Book Now",
-              style: TextStyle(fontSize: 18, color: Colors.white),
+              style: TextStyle(
+                fontSize: 18,
+                color: colorScheme.onPrimary, // Use onPrimary color for button text
+              ),
             ),
           ),
         ),
@@ -211,20 +219,27 @@ class CarDetailScreen extends StatelessWidget {
   }
 
   // Build the Description tab content
-  Widget _buildDescriptionTab(BuildContext context) {
+  Widget _buildDescriptionTab(BuildContext context, ColorScheme colorScheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Car Details',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onBackground, // Use onBackground color for text
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             car.description,
-            style: const TextStyle(fontSize: 16),
+            style: TextStyle(
+              fontSize: 16,
+              color: colorScheme.onBackground, // Use onBackground color for text
+            ),
           ),
           const SizedBox(height: 16),
           const Divider(),
@@ -232,8 +247,8 @@ class CarDetailScreen extends StatelessWidget {
           Wrap(
             spacing: 16,
             children: [
-              _buildCarDetailRow(Icons.speed, 'Transmission', car.transmission ?? 'Automatic'),
-              _buildCarDetailRow(Icons.local_gas_station, 'Fuel', car.fuelType ?? 'Petrol'),
+              _buildCarDetailRow(Icons.speed, 'Transmission', car.transmission ?? 'Automatic', colorScheme),
+              _buildCarDetailRow(Icons.local_gas_station, 'Fuel', car.fuelType ?? 'Petrol', colorScheme),
             ],
           ),
         ],
@@ -242,15 +257,19 @@ class CarDetailScreen extends StatelessWidget {
   }
 
   // Build the Features tab content
-  Widget _buildFeaturesTab() {
+  Widget _buildFeaturesTab(ColorScheme colorScheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Car Features',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onBackground, // Use onBackground color for text
+            ),
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -266,7 +285,7 @@ class CarDetailScreen extends StatelessWidget {
   }
 
   // Build the Reviews tab content
-  Widget _buildReviewsTab() {
+  Widget _buildReviewsTab(ColorScheme colorScheme) {
     CarRepository repository = CarRepository();
 
     // Define the delete review logic
@@ -296,14 +315,23 @@ class CarDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Customer Reviews',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onBackground, // Use onBackground color for text
+            ),
           ),
           const SizedBox(height: 10),
           // Check if there are reviews, else show a message
           if (car.reviews.isEmpty)
-            const Text("No reviews yet.")
+            Text(
+              "No reviews yet.",
+              style: TextStyle(
+                color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for text
+              ),
+            )
           else
           // Display the list of reviews
             Column(
@@ -323,18 +351,31 @@ class CarDetailScreen extends StatelessWidget {
   }
 
   // Helper method to build car detail row for info section
-  Widget _buildCarDetailRow(IconData icon, String title, String value) {
+  Widget _buildCarDetailRow(IconData icon, String title, String value, ColorScheme colorScheme) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.grey),
+        Icon(icon, color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for icon
         const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for text
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onBackground, // Use onBackground color for text
+              ),
+            ),
           ],
         ),
       ],

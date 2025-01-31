@@ -11,52 +11,6 @@ class GlobalConfig {
   static File? image;
 }
 
-// Define the colors
-const Color swatch1 = Color(0xFFeff2f5); // Light Blue color (swatch1)
-const Color swatch2 = Color(0xFFa2d0de); // Light Cyan color (swatch2)
-const Color swatch3 = Color(0xFF0f84b3); // Baby Blue color (swatch3)
-const Color swatch4 = Color(0xFF99b7c0); // Grey color (swatch4)
-const Color swatch5 = Color(0xFF1e2225); // Dark Grey color (swatch5)
-const Color swatch6 = Color(0xFF0a6292); // Deep Blue color (swatch6)
-
-class AppTheme {
-  static final ThemeData light = ThemeData(
-    primaryColor: swatch3,
-    brightness: Brightness.light,
-    scaffoldBackgroundColor: swatch1,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: swatch3,
-      foregroundColor: Colors.white,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: swatch3,
-    ),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: swatch5),
-      bodyMedium: TextStyle(color: swatch4),
-    ),
-    iconTheme: const IconThemeData(color: swatch5),
-  );
-
-  static final ThemeData dark = ThemeData(
-    brightness: Brightness.dark,
-    primaryColor: swatch6,
-    scaffoldBackgroundColor: swatch5,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: swatch6,
-      foregroundColor: Colors.black,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: swatch6,
-    ),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: swatch4),
-    ),
-    iconTheme: const IconThemeData(color: Colors.black),
-  );
-}
-
 class FavoriteManager {
   // Singleton instance
   static final FavoriteManager instance = FavoriteManager._internal();
@@ -157,4 +111,137 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       ),
     );
   }
+}
+
+// Define a modern color scheme
+const Color primaryColorLight = Color(0xFF6200EE); // Purple
+const Color secondaryColorLight = Color(0xFF03DAC6); // Teal
+const Color backgroundColorLight = Color(0xFFF5F5F5); // Light Grey
+const Color surfaceColorLight = Color(0xFFFFFFFF); // White
+const Color errorColorLight = Color(0xFFB00020); // Red
+const Color onPrimaryColorLight = Color(0xFFFFFFFF); // White
+const Color onSecondaryColorLight = Color(0xFF000000); // Black
+const Color onBackgroundColorLight = Color(0xFF000000); // Black
+const Color onSurfaceColorLight = Color(0xFF000000); // Black
+const Color onErrorColorLight = Color(0xFFFFFFFF); // White
+
+const Color primaryColorDark = Color(0xFFBB86FC); // Light Purple
+const Color secondaryColorDark = Color(0xFF03DAC6); // Teal
+const Color backgroundColorDark = Color(0xFF121212); // Dark Grey
+const Color surfaceColorDark = Color(0xFF1E1E1E); // Dark Surface
+const Color errorColorDark = Color(0xFFCF6679); // Light Red
+const Color onPrimaryColorDark = Color(0xFF000000); // Black
+const Color onSecondaryColorDark = Color(0xFF000000); // Black
+const Color onBackgroundColorDark = Color(0xFFFFFFFF); // White
+const Color onSurfaceColorDark = Color(0xFFFFFFFF); // White
+const Color onErrorColorDark = Color(0xFF000000); // Black
+
+class AppTheme {
+  static ThemeData light = ThemeData(
+    brightness: Brightness.light,
+    primaryColor: primaryColorLight,
+    colorScheme: const ColorScheme.light(
+      primary: primaryColorLight,
+      secondary: secondaryColorLight,
+      background: backgroundColorLight,
+      surface: surfaceColorLight,
+      error: errorColorLight,
+      onPrimary: onPrimaryColorLight,
+      onSecondary: onSecondaryColorLight,
+      onBackground: onBackgroundColorLight,
+      onSurface: onSurfaceColorLight,
+      onError: onErrorColorLight,
+    ),
+    scaffoldBackgroundColor: backgroundColorLight,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: primaryColorLight,
+      foregroundColor: onPrimaryColorLight,
+      elevation: 0,
+      iconTheme: IconThemeData(color: onPrimaryColorLight),
+      titleTextStyle: TextStyle(
+        color: onPrimaryColorLight,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: primaryColorLight,
+      foregroundColor: onPrimaryColorLight,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: onBackgroundColorLight),
+      bodyMedium: TextStyle(color: onSurfaceColorLight),
+      headlineMedium: TextStyle(color: onBackgroundColorLight),
+      headlineSmall: TextStyle(color: onBackgroundColorLight),
+    ),
+    iconTheme: const IconThemeData(color: onBackgroundColorLight),
+    cardTheme: const CardTheme(
+      color: surfaceColorLight,
+      elevation: 2,
+      margin: EdgeInsets.all(8),
+    ),
+    buttonTheme: const ButtonThemeData(
+      buttonColor: primaryColorLight,
+      textTheme: ButtonTextTheme.primary,
+    ),
+    dialogTheme: const DialogTheme(
+      backgroundColor: surfaceColorLight,
+      titleTextStyle: TextStyle(color: onSurfaceColorLight, fontSize: 20),
+      contentTextStyle: TextStyle(color: onSurfaceColorLight),
+    ),
+  );
+
+  static ThemeData dark = ThemeData(
+    brightness: Brightness.dark,
+    primaryColor: primaryColorDark,
+    colorScheme: const ColorScheme.dark(
+      primary: primaryColorDark,
+      secondary: secondaryColorDark,
+      background: backgroundColorDark,
+      surface: surfaceColorDark,
+      error: errorColorDark,
+      onPrimary: onPrimaryColorDark,
+      onSecondary: onSecondaryColorDark,
+      onBackground: onBackgroundColorDark,
+      onSurface: onSurfaceColorDark,
+      onError: onErrorColorDark,
+    ),
+    scaffoldBackgroundColor: backgroundColorDark,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: primaryColorDark,
+      foregroundColor: onPrimaryColorDark,
+      elevation: 0,
+      iconTheme: IconThemeData(color: onPrimaryColorDark),
+      titleTextStyle: TextStyle(
+        color: onPrimaryColorDark,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: primaryColorDark,
+      foregroundColor: onPrimaryColorDark,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: onBackgroundColorDark),
+      bodyMedium: TextStyle(color: onSurfaceColorDark),
+      headlineMedium: TextStyle(color: onBackgroundColorDark),
+      headlineSmall: TextStyle(color: onBackgroundColorDark),
+    ),
+    iconTheme: const IconThemeData(color: onBackgroundColorDark),
+    cardTheme: const CardTheme(
+      color: surfaceColorDark,
+      elevation: 2,
+      margin: EdgeInsets.all(8),
+    ),
+    buttonTheme: const ButtonThemeData(
+      buttonColor: primaryColorDark,
+      textTheme: ButtonTextTheme.primary,
+    ),
+    dialogTheme: const DialogTheme(
+      backgroundColor: surfaceColorDark,
+      titleTextStyle: TextStyle(color: onSurfaceColorDark, fontSize: 20),
+      contentTextStyle: TextStyle(color: onSurfaceColorDark),
+    ),
+  );
 }

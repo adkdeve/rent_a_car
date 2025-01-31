@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rent_a_car_project/carModel/Car.dart';
 import 'package:rent_a_car_project/carModel/CarRepository.dart';
+import '../../providers/CategoriesProvider.dart';
 import '../CarDetailScreen.dart';
 
 class CarByBrands extends StatefulWidget {
@@ -19,48 +21,125 @@ class CarByBrands extends StatefulWidget {
 class _CarByBrandsState extends State<CarByBrands> {
   bool isGridView = true; // Toggle between grid and list view
   String selectedSort = 'Price'; // Default filter option
-  late Future<List<Car>> filteredCars; // Now it's a Future<List<Car>>
-  final CarRepository repository = CarRepository();
 
   @override
-  void initState() {
-    super.initState();
-    filteredCars = repository.getCarByBrand(widget.brandName); // Initialize filteredCars with all cars
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Cars by Brand',
+          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+        ),
+        backgroundColor: colorScheme.primary,
+      ),
+      body: Consumer<CategoriesProvider>(
+        builder: (context, provider, child) {
+          return FutureBuilder<List<Car>>(
+            future: provider.getCarsByBrand(widget.brandName),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(color: colorScheme.primary),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error loading cars.',
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.error),
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No cars available.',
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+                  ),
+                );
+              } else {
+                List<Car> cars = provider.sortCars(snapshot.data!, selectedSort);
+                return Column(
+                  children: [
+                    // Filter Bar
+                    _buildFilterBar(provider, colorScheme, textTheme),
+                    // Car List/Grid
+                    Expanded(
+                      child: isGridView
+                          ? GridView.builder(
+                        padding: const EdgeInsets.all(8.0),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // Two columns in GridView
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
+                          childAspectRatio: 0.7, // Adjust child aspect ratio to prevent overflow
+                        ),
+                        itemCount: cars.length,
+                        itemBuilder: (context, index) {
+                          return _buildCarCard(cars[index], context, colorScheme, textTheme);
+                        },
+                      )
+                          : ListView.builder(
+                        padding: const EdgeInsets.all(8.0),
+                        itemCount: cars.length,
+                        itemBuilder: (context, index) {
+                          return _buildCarCard(cars[index], context, colorScheme, textTheme);
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
+          );
+        },
+      ),
+    );
   }
 
-  // Method to sort cars by price or rating
-  void _applySort(String criteria) {
-    setState(() {
-      filteredCars = filteredCars.then((carsList) {
-        if (criteria == 'Price') {
-          // Remove non-numeric characters from price and convert to double for sorting
-          carsList.sort((a, b) {
-            double priceA = double.tryParse(a.pricePerDay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
-            double priceB = double.tryParse(b.pricePerDay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
-            return priceA.compareTo(priceB);
-          });
-        } else if (criteria == 'Rating') {
-          // Convert rating to double for sorting
-          carsList.sort((a, b) {
-            double ratingA = double.tryParse(a.rating) ?? 0;
-            double ratingB = double.tryParse(b.rating) ?? 0;
-            return ratingB.compareTo(ratingA); // Sort by rating in descending order
-          });
-        }
-        return carsList;
-      });
-    });
-  }
-
-  // Method to toggle between grid and list view
-  void _toggleLayout() {
-    setState(() {
-      isGridView = !isGridView;
-    });
+  // Build filter bar
+  Widget _buildFilterBar(CategoriesProvider provider, ColorScheme colorScheme, TextTheme textTheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Sort Dropdown
+          DropdownButton<String>(
+            value: selectedSort,
+            items: <String>['Price', 'Rating'].map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  'Sort by $value',
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedSort = value!;
+              });
+            },
+          ),
+          // Toggle between ListView and GridView
+          IconButton(
+            icon: Icon(isGridView ? Icons.list : Icons.grid_view),
+            onPressed: () {
+              setState(() {
+                isGridView = !isGridView;
+              });
+            },
+            color: colorScheme.onSurface,
+          ),
+        ],
+      ),
+    );
   }
 
   // Builds a car card (used for both ListView and GridView)
-  Widget _buildCarCard(Car car, BuildContext context) {
+  Widget _buildCarCard(Car car, BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
     return GestureDetector(
       onTap: () {
         // Navigate to CarDetailScreen when the card is tapped
@@ -74,6 +153,7 @@ class _CarByBrandsState extends State<CarByBrands> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
+        color: colorScheme.surface,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -93,7 +173,10 @@ class _CarByBrandsState extends State<CarByBrands> {
                   // Car name with ellipsis overflow handling
                   Text(
                     car.name,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -104,17 +187,19 @@ class _CarByBrandsState extends State<CarByBrands> {
                       // Price per day
                       Text(
                         '₹${car.pricePerDay}/day',
-                        style: const TextStyle(fontSize: 14, color: Colors.green),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
                       ),
                       // Rating with star icon
                       Row(
                         children: [
-                          const Icon(Icons.star, color: Colors.yellow, size: 16),
+                          Icon(Icons.star, color: colorScheme.secondary, size: 16),
                           Text(
                             car.rating,
-                            style: const TextStyle(
-                              fontSize: 14,
+                            style: textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -129,7 +214,9 @@ class _CarByBrandsState extends State<CarByBrands> {
                       Flexible(
                         child: Text(
                           car.transmission ?? 'Unknown',
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -138,7 +225,9 @@ class _CarByBrandsState extends State<CarByBrands> {
                       Flexible(
                         child: Text(
                           car.fuelType ?? 'Unknown',
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -173,92 +262,4 @@ class _CarByBrandsState extends State<CarByBrands> {
       return const Icon(Icons.broken_image); // Display broken image icon if image URL is empty
     }
   }
-
-  // Build filter bar
-  Widget _buildFilterBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Sort Dropdown
-          DropdownButton<String>(
-            value: selectedSort,
-            items: <String>['Price', 'Rating'].map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text('Sort by $value'),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedSort = value!;
-                _applySort(selectedSort);
-              });
-            },
-          ),
-          // Toggle between ListView and GridView
-          IconButton(
-            icon: Icon(isGridView ? Icons.list : Icons.grid_view),
-            onPressed: _toggleLayout,
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cars by Brand', style: TextStyle(color: Colors.white)),
-      ),
-      body: Column(
-        children: [
-          // Filter Bar
-          _buildFilterBar(),
-
-          // Car List/Grid
-          Expanded(
-            child: FutureBuilder<List<Car>>(
-              future: filteredCars,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return const Center(child: Text('Error loading cars.'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No cars available.'));
-                } else {
-                  List<Car> cars = snapshot.data!;
-                  return isGridView
-                      ? GridView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, // Two columns in GridView
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
-                      childAspectRatio: 0.7, // Adjust child aspect ratio to prevent overflow
-                    ),
-                    itemCount: cars.length,
-                    itemBuilder: (context, index) {
-                      return _buildCarCard(cars[index], context);
-                    },
-                  )
-                      : ListView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    itemCount: cars.length,
-                    itemBuilder: (context, index) {
-                      return _buildCarCard(cars[index], context);
-                    },
-                  );
-                }
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
-

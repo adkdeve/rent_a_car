@@ -153,10 +153,16 @@ class _CarAddScreenState extends State<CarAddScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Your Car for Rent', style: TextStyle(color: Colors.white)),
-        backgroundColor: swatch3,
+        title: Text(
+          'Add Your Car for Rent',
+          style: TextStyle(color: colorScheme.onPrimary), // Use onPrimary color for text
+        ),
+        backgroundColor: colorScheme.primary, // Use primary color for app bar background
       ),
       body: Stack(
         children: [
@@ -174,16 +180,27 @@ class _CarAddScreenState extends State<CarAddScreen> {
                     child: Container(
                       height: 200,
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: colorScheme.surface, // Use surface color for background
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: swatch4),
+                        border: Border.all(
+                          color: colorScheme.onSurface.withOpacity(0.5), // Use onSurface color for border
+                        ),
                       ),
-                      child: const Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.camera_alt, color: swatch5, size: 50),
-                          SizedBox(height: 10),
-                          Text('Upload Car Images', style: TextStyle(color: swatch5)),
+                          Icon(
+                            Icons.camera_alt,
+                            color: colorScheme.onBackground, // Use onBackground color for icon
+                            size: 50,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Upload Car Images',
+                            style: TextStyle(
+                              color: colorScheme.onBackground, // Use onBackground color for text
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -299,11 +316,16 @@ class _CarAddScreenState extends State<CarAddScreen> {
                 ElevatedButton(
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: swatch3,
+                    backgroundColor: colorScheme.primary, // Use primary color for button background
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: const Text('Submit Car Details', style: TextStyle(color: Colors.white)),
+                  child: Text(
+                    'Submit Car Details',
+                    style: TextStyle(
+                      color: colorScheme.onPrimary, // Use onPrimary color for button text
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -320,15 +342,18 @@ class _CarAddScreenState extends State<CarAddScreen> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
+        prefixIcon: Icon(icon, color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for icon
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+      style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
     );
   }
 
@@ -338,6 +363,9 @@ class _CarAddScreenState extends State<CarAddScreen> {
     required List<String> items,
     required Function(String?) onChanged,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
@@ -350,7 +378,10 @@ class _CarAddScreenState extends State<CarAddScreen> {
         items: items.map((String item) {
           return DropdownMenuItem<String>(
             value: item,
-            child: Text(item),
+            child: Text(
+              item,
+              style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
+            ),
           );
         }).toList(),
       ),
@@ -358,10 +389,16 @@ class _CarAddScreenState extends State<CarAddScreen> {
   }
 
   Widget _buildFeatureSwitch(String label, bool value, Function(bool) onChanged) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SwitchListTile(
-      title: Text(label),
+      title: Text(
+        label,
+        style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
+      ),
       value: value,
-      activeColor: swatch3,
+      activeColor: colorScheme.primary, // Use primary color for switch
       onChanged: onChanged,
       contentPadding: const EdgeInsets.symmetric(vertical: 4),
     );

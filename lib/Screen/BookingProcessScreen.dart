@@ -222,10 +222,14 @@ class _BookingProcessScreenState extends State<BookingProcessScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Booking Process"),
-        backgroundColor: Colors.blue,
+        backgroundColor: colorScheme.primary, // Use primary color for app bar background
+        foregroundColor: colorScheme.onPrimary, // Use onPrimary color for text and icons
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -238,27 +242,33 @@ class _BookingProcessScreenState extends State<BookingProcessScreen> {
             children: [
               Text(
                 "Book Your ${widget.car.name}",
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onBackground, // Use onBackground color for text
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 initialValue: _name,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Full Name",
                   border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for label
                 ),
-                style: const TextStyle(color: Colors.black), // Text color change
+                style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
                 validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
                 onChanged: (value) => _name = value,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 initialValue: _phoneNumber,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Phone Number",
                   border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for label
                 ),
-                style: const TextStyle(color: Colors.black), // Text color change
+                style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
                 validator: (value) => value!.isEmpty ? 'Please enter your phone number' : null,
                 onChanged: (value) => _phoneNumber = value,
               ),
@@ -266,12 +276,13 @@ class _BookingProcessScreenState extends State<BookingProcessScreen> {
               TextField(
                 controller: _pickupDateController,
                 readOnly: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Pickup Date",
                   border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.calendar_today),
+                  suffixIcon: Icon(Icons.calendar_today, color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for icon
+                  labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for label
                 ),
-                style: const TextStyle(color: Colors.black), // Text color change
+                style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
                 onTap: () async {
                   DateTime initialDate = DateTime.now();
                   DateTime firstDate = DateTime.now();
@@ -304,11 +315,13 @@ class _BookingProcessScreenState extends State<BookingProcessScreen> {
                 child: AbsorbPointer(
                   child: TextField(
                     controller: _pickupTimeController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: "Pickup Time",
                       border: OutlineInputBorder(),
-                      suffixIcon: Icon(Icons.access_time),
+                      suffixIcon: Icon(Icons.access_time, color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for icon
+                      labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for label
                     ),
+                    style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
                   ),
                 ),
               ),
@@ -316,12 +329,13 @@ class _BookingProcessScreenState extends State<BookingProcessScreen> {
               TextField(
                 controller: _dropOffDateController,
                 readOnly: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Drop-off Date",
                   border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.calendar_today),
+                  suffixIcon: Icon(Icons.calendar_today, color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for icon
+                  labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for label
                 ),
-                style: const TextStyle(color: Colors.black),
+                style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
                 onTap: () async {
                   DateTime initialDate = _pickupDate ?? DateTime.now();
                   DateTime firstDate = _pickupDate ?? DateTime.now();
@@ -354,23 +368,32 @@ class _BookingProcessScreenState extends State<BookingProcessScreen> {
                 child: AbsorbPointer(
                   child: TextField(
                     controller: _dropOffTimeController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: "Drop-off Time",
                       border: OutlineInputBorder(),
-                      suffixIcon: Icon(Icons.access_time),
+                      suffixIcon: Icon(Icons.access_time, color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for icon
+                      labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)), // Use onSurface color for label
                     ),
+                    style: TextStyle(color: colorScheme.onBackground), // Use onBackground color for text
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 'Total Duration: $_duration days',
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: colorScheme.onBackground, // Use onBackground color for text
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Total Amount: Rs$_totalAmount',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onBackground, // Use onBackground color for text
+                ),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -379,11 +402,14 @@ class _BookingProcessScreenState extends State<BookingProcessScreen> {
                   onPressed: _confirmBooking,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.all(16),
-                    backgroundColor: Colors.blue,
+                    backgroundColor: colorScheme.primary, // Use primary color for button background
                   ),
-                  child: const Text(
+                  child: Text(
                     "Confirm Booking",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: colorScheme.onPrimary, // Use onPrimary color for button text
+                    ),
                   ),
                 ),
               ),

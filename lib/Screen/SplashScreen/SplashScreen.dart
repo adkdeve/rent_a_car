@@ -58,15 +58,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: swatch3, // Using custom color swatch
-      body: Center(
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.primary, // Use the primary color from the current theme (light or dark)
+      body: const Center(
         child: Text(
           'RentX',
           style: TextStyle(
             fontSize: 40,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.white, // Keep text color as white for contrast
           ),
         ),
       ),
