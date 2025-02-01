@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:rent_a_car_project/Screen/Categories/CarByBrands.dart';
 import 'package:rent_a_car_project/Screen/Categories/CarByTypes.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../../carModel/CarRepository.dart';
 import '../../providers/CategoriesProvider.dart';
 
 class CategoriesScreen extends StatefulWidget {
@@ -26,9 +23,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Reset and fetch items when the collectionPath changes
-    final provider = Provider.of<CategoriesProvider>(context, listen: false);
-    provider.resetAndFetchItems(widget.collectionPath);
+
+    // Use Future.microtask to schedule the call after the current event loop
+    Future.microtask(() {
+      final categoriesProvider = Provider.of<CategoriesProvider>(context, listen: false);
+      categoriesProvider.resetAndFetchItems(widget.collectionPath);
+    });
   }
 
   @override
@@ -40,26 +40,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       appBar: AppBar(
         title: Text(
           widget.title,
-          style: textTheme.titleLarge?.copyWith(
-            color: colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: colorScheme.onPrimary), // Use onPrimary color for text
         ),
-        centerTitle: true,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [colorScheme.primary, colorScheme.primaryContainer],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        backgroundColor: colorScheme.primary, // Use primary color for app bar background
       ),
+
       body: Consumer<CategoriesProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
-            return _buildLoadingSkeleton(colorScheme, textTheme);
+            return _buildLoadingSkeleton();
           } else {
             return ListView(
               children: [
@@ -209,20 +198,45 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
   }
 
-  Widget _buildLoadingSkeleton(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildLoadingSkeleton() {
     return Column(
       children: [
         // Shimmer effect for the search bar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Shimmer.fromColors(
-            baseColor: colorScheme.surfaceVariant,
-            highlightColor: colorScheme.surface,
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
             child: Container(
               height: 50,
               decoration: BoxDecoration(
-                color: colorScheme.surfaceVariant,
+                color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(30),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  // Search icon placeholder
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Search text placeholder
+                  Expanded(
+                    child: Container(
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -244,7 +258,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                color: colorScheme.surface,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -256,10 +269,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           children: [
                             // Image placeholder with shimmer
                             Shimmer.fromColors(
-                              baseColor: colorScheme.surfaceVariant,
-                              highlightColor: colorScheme.surface,
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
                               child: Container(
-                                color: colorScheme.surfaceVariant,
+                                color: Colors.grey[300],
                               ),
                             ),
                             // Gradient overlay
@@ -284,13 +297,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         children: [
                           // Title placeholder with shimmer
                           Shimmer.fromColors(
-                            baseColor: colorScheme.surfaceVariant,
-                            highlightColor: colorScheme.surface,
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
                             child: Container(
                               width: 120,
                               height: 16,
                               decoration: BoxDecoration(
-                                color: colorScheme.surfaceVariant,
+                                color: Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
@@ -298,13 +311,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           const SizedBox(height: 4),
                           // Subtitle placeholder with shimmer
                           Shimmer.fromColors(
-                            baseColor: colorScheme.surfaceVariant,
-                            highlightColor: colorScheme.surface,
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
                             child: Container(
                               width: 80,
                               height: 12,
                               decoration: BoxDecoration(
-                                color: colorScheme.surfaceVariant,
+                                color: Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),

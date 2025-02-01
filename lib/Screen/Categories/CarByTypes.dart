@@ -31,10 +31,11 @@ class _CarByTypesState extends State<CarByTypes> {
       appBar: AppBar(
         title: Text(
           'Cars by Type',
-          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+          style: TextStyle(color: colorScheme.onPrimary), // Use onPrimary color for text
         ),
-        backgroundColor: colorScheme.primary,
+        backgroundColor: colorScheme.primary, // Use primary color for app bar background
       ),
+
       body: Consumer<CategoriesProvider>(
         builder: (context, provider, child) {
           return FutureBuilder<List<Car>>(

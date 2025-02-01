@@ -9,16 +9,20 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
+
+  // Enable edge-to-edge mode
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+  // Set transparent status bar with light icons
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // Transparent status bar
       statusBarIconBrightness: Brightness.light, // Light icons for dark theme
     ),
   );
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebase
-  runApp(const RentXApp());
 
+  runApp(const RentXApp());
 }
 
 class RentXApp extends StatelessWidget {

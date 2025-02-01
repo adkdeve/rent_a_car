@@ -30,10 +30,10 @@ class _CarByBrandsState extends State<CarByBrands> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Cars by Brand',
-          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+          'Cars By Brand',
+          style: TextStyle(color: colorScheme.onPrimary), // Use onPrimary color for text
         ),
-        backgroundColor: colorScheme.primary,
+        backgroundColor: colorScheme.primary, // Use primary color for app bar background
       ),
       body: Consumer<CategoriesProvider>(
         builder: (context, provider, child) {

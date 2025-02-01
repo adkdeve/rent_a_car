@@ -29,22 +29,25 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final themeColor = Theme.of(context).primaryColor;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Text('Profile', style: TextStyle(color: Colors.white)),
+        title: Center(
+          child: Text(
+            'Profile',
+            style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+          ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: colorScheme.primary,
         elevation: 0,
-        // Notification icon on the top-left
         leading: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('users')
               .doc(userId)
               .collection('notifications')
-              .where('isRead', isEqualTo: false)  // Filter for unread notifications
+              .where('isRead', isEqualTo: false)
               .snapshots(),
           builder: (context, snapshot) {
             int unreadCount = 0;
@@ -57,12 +60,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 showBadge: unreadCount > 0,
                 badgeContent: Text(
                   '$unreadCount',
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: colorScheme.onPrimary),
                 ),
-                child: const Icon(Icons.notifications, color: Colors.white),
+                child: Icon(Icons.notifications, color: colorScheme.onPrimary),
               ),
               onPressed: () {
-                // Navigate to NotificationScreen
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => NotificationScreen()),
@@ -71,16 +73,11 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           },
         ),
-        // Chat icon on the top-right
         actions: [
           IconButton(
-            icon: const Icon(Icons.chat, color: Colors.white),
+            icon: Icon(Icons.chat, color: colorScheme.onPrimary),
             onPressed: () {
               // Handle chat icon press if needed
-              // Example: Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => ChatScreen()),
-              // );
             },
           ),
         ],
@@ -90,12 +87,11 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile header with avatar and name
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: theme.primaryColor,
+                  color: colorScheme.primary,
                   borderRadius: const BorderRadius.vertical(
                     bottom: Radius.circular(30),
                   ),
@@ -107,29 +103,28 @@ class _ProfilePageState extends State<ProfilePage> {
                       radius: 50,
                       backgroundImage: GlobalConfig.image != null
                           ? FileImage(GlobalConfig.image!)
-                          : const AssetImage("assets/avatar.jpg"),
+                          : const AssetImage("assets/avatar.jpg") as ImageProvider,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${GlobalConfig.name}', // Display full name
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
+                      '${GlobalConfig.name}',
+                      style: textTheme.titleLarge?.copyWith(
+                        color: colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      GlobalConfig.email.isNotEmpty ? GlobalConfig.email : GlobalConfig.phoneNumber, // Display email if not empty, else phoneNumber
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white70,
+                      GlobalConfig.email.isNotEmpty ? GlobalConfig.email : GlobalConfig.phoneNumber,
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onPrimary.withOpacity(0.7),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              _buildmyCarSection(themeColor),
-              // Profile options and actions
+              _buildMyCarSection(colorScheme, textTheme),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -149,7 +144,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         );
 
-                        // Update state with new data if available
                         if (updatedData != null) {
                           setState(() {
                             GlobalConfig.name = updatedData['name'];
@@ -163,7 +157,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.lock,
                       title: 'Forgot Password',
                       onTap: () {
-                        // Navigate to Change Password screen
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
@@ -185,20 +178,15 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'Sign Out',
                       onTap: () async {
                         try {
-                          // Sign out the user from Firebase Auth
                           await FirebaseAuth.instance.signOut();
-
-                          // Navigate to the Onboarding Screen
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => OnboardingScreen()),
                           );
-
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('You have signed out successfully!')),
                           );
                         } catch (e) {
-                          // Handle error during sign out
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Error: $e')),
                           );
@@ -216,27 +204,27 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Stream<List<Car>> fetchMyCarsStream() {
-    String userId = FirebaseAuth.instance.currentUser!.uid; // Get current user's UID
+    String userId = FirebaseAuth.instance.currentUser!.uid;
     return FirebaseFirestore.instance
         .collection('cars')
-        .where('ownerID', isEqualTo: userId) // Ensure 'ownerId' exists in Firestore
+        .where('ownerID', isEqualTo: userId)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
         var data = doc.data();
-        return Car.fromFirestore(data, doc.id); // Ensure Car.fromFirestore is implemented correctly
+        return Car.fromFirestore(data, doc.id);
       }).toList();
     });
   }
 
-  Widget _buildmyCarSection(Color themeColor) {
+  Widget _buildMyCarSection(ColorScheme colorScheme, TextTheme textTheme) {
     return StreamBuilder<List<Car>>(
       stream: fetchMyCarsStream(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
+          return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
             ),
           );
         }
@@ -245,9 +233,8 @@ class _ProfilePageState extends State<ProfilePage> {
           return Center(
             child: Text(
               "Error loading your ads",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           );
@@ -260,10 +247,8 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.all(16.0),
             child: Text(
               "You haven't added any cars yet.",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[600],
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           );
@@ -271,7 +256,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: SingleChildScrollView( // Added this
+          child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -280,30 +265,27 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     Text(
                       "My Ads",
-                      style: TextStyle(
-                        fontSize: 20,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
                       ),
                     ),
-                    ElevatedButton(
+                    TextButton(
                       onPressed: () {
-                        // Handle 'More' button click
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => CategoriesScreen(collectionPath: 'categories/doc1/categoriesByBrand',
+                        //       title: 'Cars by Brand',),
+                        //   ),
+                        // );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: themeColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        elevation: 2,
-                      ),
-                      child: const Text(
-                        'More',
+                      child: Text(
+                        'View All',
                         style: TextStyle(
-                          color: Colors.white,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
+                          color: colorScheme.primary, // Use primary color for text
                         ),
                       ),
                     ),
@@ -311,15 +293,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 150, // Fixed height for the horizontal list
+                  height: 150,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: myCars.length,
                     itemBuilder: (context, index) {
                       final car = myCars[index];
-                      return GestureDetector( // Wrap each car card with GestureDetector
+                      return GestureDetector(
                         onTap: () {
-                          // Navigate to the CarDetailScreen on tap
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -328,8 +309,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           );
                         },
                         child: Container(
-                          width: 120, // Fixed width for each car card
-                          margin: EdgeInsets.only(right: index == myCars.length - 1 ? 0 : 16), // No margin for the last item
+                          width: 120,
+                          margin: EdgeInsets.only(right: index == myCars.length - 1 ? 0 : 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -341,7 +322,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: Container(
                                     width: 120,
                                     height: 100,
-                                    color: Colors.grey[200], // Placeholder background
+                                    color: colorScheme.surfaceVariant,
                                     child: _buildImage(
                                       car.imageUrl.isNotEmpty ? car.imageUrl.first : '',
                                     ),
@@ -351,10 +332,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               const SizedBox(height: 8),
                               Text(
                                 car.name.isNotEmpty ? car.name : 'Unnamed Car',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[800],
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurface,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -386,15 +365,15 @@ class _ProfilePageState extends State<ProfilePage> {
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                   : null,
-              color: Colors.green, // Use theme color
+              color: Theme.of(context).colorScheme.primary,
             ),
           );
         },
         errorBuilder: (context, error, stackTrace) => Container(
-          color: Colors.grey[200],
-          child: const Icon(
+          color: Theme.of(context).colorScheme.surfaceVariant,
+          child: Icon(
             Icons.broken_image,
-            color: Colors.grey,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: 40,
           ),
         ),
@@ -404,26 +383,25 @@ class _ProfilePageState extends State<ProfilePage> {
         File(imageUrl),
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => Container(
-          color: Colors.grey[200],
-          child: const Icon(
+          color: Theme.of(context).colorScheme.surfaceVariant,
+          child: Icon(
             Icons.broken_image,
-            color: Colors.grey,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: 40,
           ),
         ),
       );
     } else {
       return Container(
-        color: Colors.grey[200],
-        child: const Icon(
+        color: Theme.of(context).colorScheme.surfaceVariant,
+        child: Icon(
           Icons.broken_image,
-          color: Colors.grey,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: 40,
         ),
       );
     }
   }
-
 }
 
 class ProfileOption extends StatelessWidget {

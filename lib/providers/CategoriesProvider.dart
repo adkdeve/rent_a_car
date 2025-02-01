@@ -34,16 +34,17 @@ class CategoriesProvider with ChangeNotifier {
 
       for (var doc in querySnapshot.docs) {
         final item = doc.data() as Map<String, dynamic>;
-        final category = item['brand'] ?? item['carType'];
+        final brand = item['brand'];
+        final carType = item['carType'];
 
-        // Fetch cars for this category based on the collectionPath
+        // Fetch cars for this brand or car type
         List<Car> cars;
-        if (collectionPath == 'categoriesByBrand') {
-          cars = await _repository.getCarByBrand(category); // Fetch by brand
-        } else if (collectionPath == 'categoriesByType') {
-          cars = await _repository.getCarByType(category); // Fetch by type
+        if (brand != null) {
+          cars = await _repository.getCarByBrand(brand);
+        } else if (carType != null) {
+          cars = await _repository.getCarByType(carType);
         } else {
-          cars = []; // Default to empty list if collectionPath is invalid
+          cars = [];
         }
 
         // Add the count to the item

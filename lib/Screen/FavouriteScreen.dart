@@ -9,29 +9,25 @@ class FavoriteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Favorites',
-          style: TextStyle(color: colorScheme.onPrimary), // Use onPrimary color for text
-        ),
-        backgroundColor: colorScheme.primary, // Use primary color for app bar background
+        title: const Text('Favorites', style: TextStyle(color: Colors.white)),
+        backgroundColor: theme.primaryColor,
       ),
       body: ValueListenableBuilder<List<Car>>(
         valueListenable: FavoriteManager.instance.favoriteNotifier, // Correct way to access singleton
         builder: (context, favoriteCars, child) {
           return favoriteCars.isEmpty
-              ? _buildEmptyFavorites(theme, colorScheme)
-              : _buildFavoritesList(favoriteCars, context, colorScheme);
+              ? _buildEmptyFavorites(theme)
+              : _buildFavoritesList(favoriteCars, context);
         },
       ),
     );
   }
 
   // Method to display the empty state when no favorites are added
-  Widget _buildEmptyFavorites(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildEmptyFavorites(ThemeData theme) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -41,14 +37,14 @@ class FavoriteScreen extends StatelessWidget {
             Icon(
               Icons.favorite_border,
               size: 100,
-              color: colorScheme.primary.withOpacity(0.6), // Faded primary color
+              color: theme.primaryColor.withOpacity(0.6), // Faded primary color
             ),
             const SizedBox(height: 24),
             Text(
               'No favorites yet!',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: colorScheme.primary, // Use primary color for text
+                color: theme.primaryColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -56,7 +52,7 @@ class FavoriteScreen extends StatelessWidget {
               'Your favorite items will be displayed here. Start adding your favorites now!',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for description
+                color: Colors.grey[600], // Softer color for description
               ),
             ),
           ],
@@ -66,7 +62,7 @@ class FavoriteScreen extends StatelessWidget {
   }
 
   // Method to display a list of favorite cars
-  Widget _buildFavoritesList(List<Car> favoriteCars, BuildContext context, ColorScheme colorScheme) {
+  Widget _buildFavoritesList(List<Car> favoriteCars, BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: favoriteCars.length,
@@ -87,15 +83,9 @@ class FavoriteScreen extends StatelessWidget {
               car.name,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: colorScheme.onBackground, // Use onBackground color for text
               ),
             ),
-            subtitle: Text(
-              'Price: ₹${car.pricePerDay}/day',
-              style: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.6), // Use onSurface color for text
-              ),
-            ),
+            subtitle: Text('Price: ₹${car.pricePerDay}/day'), // Display the car price
             trailing: const Icon(
               Icons.favorite,
               color: Colors.red, // Favorite icon in red
@@ -115,3 +105,4 @@ class FavoriteScreen extends StatelessWidget {
     );
   }
 }
+

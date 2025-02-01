@@ -31,8 +31,6 @@ dependencies:
   skeleton_loader: ^2.0.0+4
 
 
-
-
   swipeable_card_stack: any
 dev_dependencies:
   flutter_test:

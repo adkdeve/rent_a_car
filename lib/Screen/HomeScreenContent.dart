@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: 'Cars by Type',
     ),
     const FavoriteScreen(),
-    const ProfilePage(),
+    ProfilePage(),
   ];
 
   // Fetch user data from shared preferences
@@ -71,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      extendBody: true,
       resizeToAvoidBottomInset: false, // Prevents resizing when keyboard appears
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -161,7 +160,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ScrollController _scrollController = ScrollController(); // Scroll controller
+  final ScrollController _scrollController = ScrollController(); // Scroll controller for the main page
   late Future<List<Map<String, String>>> _categoriesFuture;
   CarRepository repository = CarRepository();
   late Future<List<Car>> featuredCars = repository.getFeaturedCars();
@@ -290,25 +289,23 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          child: SingleChildScrollView(
-            controller: _scrollController, // Attach the scroll controller
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section
-                _buildHeaderSection(context, colorScheme),
+        child: SingleChildScrollView(
+          controller: _scrollController, // Attach the scroll controller to the main scroll view
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Section
+              _buildHeaderSection(context, colorScheme),
 
-                // Categories Section
-                _buildCategoriesSection(colorScheme),
+              // Categories Section
+              _buildCategoriesSection(colorScheme),
 
-                // Featured Cars Section
-                _buildFeaturedCarsSection(colorScheme),
+              // Featured Cars Section
+              _buildFeaturedCarsSection(colorScheme),
 
-                // Recent Cars Section
-                _buildRecentCarsSection(colorScheme),
-              ],
-            ),
+              // Recent Cars Section
+              _buildRecentCarsSection(colorScheme),
+            ],
           ),
         ),
       ),
@@ -368,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
+                          builder: (context) => ProfilePage(),
                         ),
                       );
                     },
@@ -684,11 +681,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   // Favorite Button
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: FavoriteButton(car: car),
-                  ),
+                  FavoriteButton(car: car), // Use FavoriteButton directly without Positioned
                   // Car Name and Rating
                   Positioned(
                     bottom: 8,
@@ -783,33 +776,27 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: colorScheme.onBackground, // Use onBackground color for text
+              color: colorScheme.onBackground,
             ),
           ),
           const SizedBox(height: 12),
           FutureBuilder<List<Car>>(
-            future: repository.getRecentCars(), // Pass the Future to FutureBuilder
+            future: repository.getRecentCars(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator()); // Show loading spinner
+                return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}')); // Show error if any
+                return Center(child: Text('Error: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No recent cars available.')); // Handle no data
+                return const Center(child: Text('No recent cars available.'));
               } else {
-                List<Car> recentCars = snapshot.data!; // Get the list of cars
+                List<Car> recentCars = snapshot.data!;
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: recentCars.length,
                   itemBuilder: (context, index) {
-                    return ScrollToReveal.withAnimation(
-                      label: 'RecentCar$index',
-                      scrollController: _scrollController, // Use the defined ScrollController
-                      reflectPosition: 0, // Trigger animation on reaching this point
-                      animationType: AnimationType.findInLeft, // Corrected animation type
-                      child: _buildRecentCarCard(recentCars[index], context),
-                    );
+                    return _buildRecentCarCard(recentCars[index], context);
                   },
                 );
               }
@@ -820,14 +807,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Individual Recent Car Card with RevealOnScroll applied
+  // Individual Recent Car Card
   Widget _buildRecentCarCard(Car car, BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return GestureDetector(
       onTap: () {
-        // Navigate to car details page using the Car object
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -884,11 +870,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 // Favorite Button in top right corner
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: FavoriteButton(car: car), // Use the same global favorite button
-                ),
+                FavoriteButton(car: car), // Use FavoriteButton directly without Positioned
               ],
             ),
             // Car Details Section
